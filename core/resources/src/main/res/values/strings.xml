@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_title">TestReminder</string>
+
+    <string name="addTask">Add Task</string>
+    <string name="addYourTask">add your task</string>
+    <string name="addYourTaskFirst">Add your Task first…</string>
+
+    <string name="edit">Edit…</string>
+    <string name="delete">Delete…</string>
+
+    <string name="makeYourOwnReminder">Make your own Reminder.</string>
+    <string name="title">Title</string>
+    <string name="insertTitle">Insert Title</string>
+    <string name="time">Time</string>
+    <string name="timeHoursAndMinutesHint">00</string>
+    <string name="calendar">Calendar</string>
+    <string name="dayHint">dd</string>
+    <string name="monthHint">mm</string>
+    <string name="yearHint">yyyy</string>
+    <string name="repeat">Repeat</string>
+    <string name="once">Once</string>
+    <string name="daily">Daily</string>
+    <string name="monToFri">Mon to Fri</string>
+
+</resources>

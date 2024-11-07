@@ -5,7 +5,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import com.kotlity.core.resources.ResourcesConstant._13sp
+import com.kotlity.core.resources.ResourcesConstant._14sp
+import com.kotlity.core.resources.ResourcesConstant._15sp
+import com.kotlity.core.resources.ResourcesConstant._16sp
+import com.kotlity.core.resources.ResourcesConstant._18sp
+import com.kotlity.core.resources.ResourcesConstant._19sp
+import com.kotlity.core.resources.ResourcesConstant._22sp
 
 private val CoolVetica = FontFamily(
     Font(resId = com.kotlity.core.resources.R.font.coolvetica_condensed),
@@ -26,56 +32,56 @@ val AlteHassGrotesk = FontFamily(
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = 22.sp,
+        fontSize = _22sp,
         color = black
     ),
     labelSmall = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = 13.sp,
+        fontSize = _13sp,
         fontWeight = FontWeight.Bold,
         color = onTertiary
     ),
     titleMedium = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = 18.sp,
+        fontSize = _18sp,
         fontWeight = FontWeight.Bold,
         color = black
     ),
     titleLarge = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = 19.sp,
+        fontSize = _19sp,
         fontWeight = FontWeight.Bold,
         color = black
     ),
     bodyMedium = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 14.sp,
+        fontSize = _14sp,
         color = darkBlack
     ),
     bodyLarge = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 16.sp,
+        fontSize = _16sp,
         color = halfGrey
     ),
     bodySmall = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 13.sp,
+        fontSize = _13sp,
         color = grey
     ),
     displayLarge = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 19.sp,
+        fontSize = _19sp,
         fontWeight = FontWeight.Bold,
         color = white
     ),
     displayMedium = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 16.sp,
+        fontSize = _16sp,
         color = black
     ),
     displaySmall = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = 15.sp,
+        fontSize = _15sp,
         color = halfGrey
     )
 

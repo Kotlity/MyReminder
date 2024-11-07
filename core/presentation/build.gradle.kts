@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:resources"))
 
     implementation(libs.bundles.android.core)
 
