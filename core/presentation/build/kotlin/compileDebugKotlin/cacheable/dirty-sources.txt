@@ -1,0 +1,3 @@
+C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\src\main\java\com\kotlity\core\presentation\ui\theme\Color.kt
+C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\src\main\java\com\kotlity\core\presentation\ui\theme\Theme.kt
+C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\src\main\java\com\kotlity\core\presentation\ui\theme\Type.kt

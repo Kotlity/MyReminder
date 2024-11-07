@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MyReminder"
 include(":app")
- 
+include(":core:resources")
