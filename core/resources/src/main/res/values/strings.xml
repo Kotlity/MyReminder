@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="reminderDatabaseName">reminder_db</string>
 
     <string name="app_title">TestReminder</string>
 
@@ -23,5 +24,17 @@
     <string name="once">Once</string>
     <string name="daily">Daily</string>
     <string name="monToFri">Mon to Fri</string>
+
+
+    <string name="unknownException">Something went wrong. Please try again later.</string>
+
+    <string name="databaseIllegalStateException">There was an error loading data. Please restart the application.</string>
+    <string name="sqliteConstraintException">This item already exists. Please check the data and try again.</string>
+    <string name="sqliteException">Error accessing data. Please try again later.</string>
+    <string name="databaseIllegalArgumentException">An error occurred while processing data. Please check the information you entered and try again.</string>
+
+    <string name="alarmSecurityException">Insufficient rights to set a reminder. Please grant the necessary permissions in the app settings.</string>
+    <string name="alarmIllegalArgumentException">Error setting up reminder. Check your details and try again.</string>
+    <string name="alarmCanceledException">Error setting up reminder. Check your details and try again.</string>
 
 </resources>

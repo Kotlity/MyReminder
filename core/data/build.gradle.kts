@@ -1,11 +1,12 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
-    namespace = "com.kotlity.core.presentation"
+    namespace = "com.kotlity.core.data"
     compileSdk = 34
 
     defaultConfig {
@@ -31,24 +32,23 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 }
 
 dependencies {
-    implementation(project(":core:resources"))
     implementation(project(":core:domain"))
+    implementation(project(":core:resources"))
 
     implementation(libs.bundles.android.core)
 
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.bundles.compose)
+    implementation(libs.bundles.coroutines)
+
+    implementation(libs.bundles.koin)
+
+    implementation(libs.bundles.room)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.bundles.test)
-
-    androidTestImplementation(libs.bundles.android.test)
 }
