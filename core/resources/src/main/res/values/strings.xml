@@ -37,4 +37,17 @@
     <string name="alarmIllegalArgumentException">Error setting up reminder. Check your details and try again.</string>
     <string name="alarmCanceledException">Error setting up reminder. Check your details and try again.</string>
 
+    <string name="reminderIdExtraKey">reminderId</string>
+    <string name="reminderTitleExtraKey">reminderTitle</string>
+    <string name="reminderTimeExtraKey">reminderTime</string>
+    <string name="reminderPeriodicityExtraKey">reminderPeriodicity</string>
+    
+    <string name="titleIsBlank">Title cannot be blank !</string>
+    <string name="titleStartsWithLowerCase">Title cannot starts with a lowercase letter !</string>
+    <string name="titleStartsWithADigit">Title cannot starts with a digit !</string>
+    <string name="titleIsTooLong">Title is too long !</string>
+
+    <string name="reminderTimePastTense">You can not select past time! Time increased by 1 minute from the current moment</string>
+    <string name="reminderTimeSetSuccessful">The timing was chosen successfully.</string>
+
 </resources>
