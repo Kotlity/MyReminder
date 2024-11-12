@@ -50,4 +50,7 @@
     <string name="reminderTimePastTense">You can not select past time! Time increased by 1 minute from the current moment</string>
     <string name="reminderTimeSetSuccessful">The timing was chosen successfully.</string>
 
+    <string name="notificationChannelId" translatable="false">my_reminder_channel_id</string>
+    <string name="notificationContentText">Hurry up! Don\'t forget your task :)</string>
+
 </resources>

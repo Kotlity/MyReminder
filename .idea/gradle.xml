@@ -16,6 +16,9 @@
             <option value="$PROJECT_DIR$/core/alarm/domain" />
             <option value="$PROJECT_DIR$/core/data" />
             <option value="$PROJECT_DIR$/core/domain" />
+            <option value="$PROJECT_DIR$/core/notification" />
+            <option value="$PROJECT_DIR$/core/notification/data" />
+            <option value="$PROJECT_DIR$/core/notification/domain" />
             <option value="$PROJECT_DIR$/core/presentation" />
             <option value="$PROJECT_DIR$/core/resources" />
           </set>
