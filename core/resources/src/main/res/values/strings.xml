@@ -37,4 +37,7 @@
     <string name="alarmIllegalArgumentException">Error setting up reminder. Check your details and try again.</string>
     <string name="alarmCanceledException">Error setting up reminder. Check your details and try again.</string>
 
+    <string name="notificationChannelId" translatable="false">my_reminder_channel_id</string>
+    <string name="notificationContentText">Hurry up! Don\'t forget your task :)</string>
+
 </resources>
