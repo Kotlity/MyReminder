@@ -57,6 +57,14 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:resources"))
+    implementation(project(":core:data"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:presentation"))
+    implementation(project(":core:alarm:data"))
+    implementation(project(":core:alarm:domain"))
+    implementation(project(":core:notification:data"))
+    implementation(project(":core:notification:domain"))
 
     implementation(libs.bundles.android.core)
 
