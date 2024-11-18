@@ -4,44 +4,44 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import androidx.core.os.bundleOf
+import com.kotlity.core.alarm.data.receivers.AlarmReceiver
 import com.kotlity.core.alarm.data.util.reminderCall
-import com.kotlity.core.alarm.domain.Reminder
+import com.kotlity.core.domain.Reminder
 import com.kotlity.core.alarm.domain.Scheduler
 import com.kotlity.core.domain.util.AlarmError
 import com.kotlity.core.domain.util.Result
 
-class AlarmScheduler(private val context: Context): Scheduler {
+class AlarmScheduler(
+    private val alarmManager: AlarmManager,
+    private val context: Context
+): Scheduler {
 
-    private val alarmManager by lazy {
-        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    }
+    private fun canScheduleExactAlarms() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms() else true
 
-    override fun addReminder(reminder: Reminder): Result<Unit, AlarmError> {
+    override fun addOrUpdateReminder(reminder: Reminder): Result<Unit, AlarmError> {
         return reminderCall {
+            if (!canScheduleExactAlarms()) return@reminderCall Result.Error(error = AlarmError.SECURITY)
             val intent = Intent(context, AlarmReceiver::class.java).apply {
-                putExtra(context.getString(com.kotlity.core.resources.R.string.reminderIdExtraKey), reminder.id)
-                putExtra(context.getString(com.kotlity.core.resources.R.string.reminderTitleExtraKey), reminder.title)
-                putExtra(context.getString(com.kotlity.core.resources.R.string.reminderTimeExtraKey), reminder.reminderTime)
-                putExtra(context.getString(com.kotlity.core.resources.R.string.reminderPeriodicityExtraKey), reminder.periodicity)
+                val bundle = bundleOf(
+                    context.getString(com.kotlity.core.resources.R.string.reminderIdExtraKey) to reminder.id,
+                    context.getString(com.kotlity.core.resources.R.string.reminderTitleExtraKey) to reminder.title,
+                    context.getString(com.kotlity.core.resources.R.string.reminderTimeExtraKey) to reminder.reminderTime,
+                    context.getString(com.kotlity.core.resources.R.string.reminderPeriodicityExtraKey) to reminder.periodicity.name
+                )
+                putExtra(context.getString(com.kotlity.core.resources.R.string.reminderBundleExtraKey), bundle)
             }
-            val pendingIntent = PendingIntent.getBroadcast(context, reminder.id.toInt(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pendingIntent = PendingIntent.getBroadcast(context, reminder.id.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, reminder.reminderTime, pendingIntent)
             Result.Success(Unit)
-        }
-    }
-
-    override fun updateReminder(reminder: Reminder): Result<Unit, AlarmError> {
-        return reminderCall {
-            val cancellingResult = cancelReminder(reminder.id)
-            if (cancellingResult is Result.Error) return@reminderCall cancellingResult
-            addReminder(reminder)
         }
     }
 
     override fun cancelReminder(id: Long): Result<Unit, AlarmError> {
         return reminderCall {
             val pendingIntent = Intent(context, AlarmReceiver::class.java).let {
-                PendingIntent.getBroadcast(context, id.toInt(), it, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.getBroadcast(context, id.hashCode(), it, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
             }
             alarmManager.cancel(pendingIntent)
             Result.Success(Unit)

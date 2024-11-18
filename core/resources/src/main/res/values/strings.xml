@@ -39,6 +39,7 @@
     <string name="alarmIllegalArgumentException">Error setting up reminder. Check your details and try again.</string>
     <string name="alarmCanceledException">Error setting up reminder. Check your details and try again.</string>
 
+    <string name="reminderBundleExtraKey">reminderBundle</string>
     <string name="reminderIdExtraKey">reminderId</string>
     <string name="reminderTitleExtraKey">reminderTitle</string>
     <string name="reminderTimeExtraKey">reminderTime</string>

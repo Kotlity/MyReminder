@@ -1,6 +1,4 @@
-package com.kotlity.core.alarm.domain
-
-import com.kotlity.core.domain.Periodicity
+package com.kotlity.core.domain
 
 data class Reminder(
     val id: Long,
