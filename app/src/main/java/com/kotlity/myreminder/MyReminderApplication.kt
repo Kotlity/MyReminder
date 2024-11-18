@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.kotlity.core.alarm.data.di.alarmManagerModule
 import com.kotlity.core.alarm.data.di.alarmSchedulerModule
 import com.kotlity.core.data.local.di.reminderDaoModule
 import com.kotlity.core.data.local.di.reminderDatabaseModule
@@ -32,6 +33,7 @@ private fun Application.setupKoin() {
         modules(
             notificationManagerModule,
             notificationServiceModule,
+            alarmManagerModule,
             alarmSchedulerModule,
             reminderDatabaseModule,
             reminderDaoModule
