@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.kotlity.core.data"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.kotlity.core.data.InstrumentationTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -35,6 +35,12 @@ android {
     room {
         schemaDirectory("$projectDir/schemas")
     }
+    packaging {
+        resources {
+            merges += "META-INF/LICENSE.md"
+            merges += "META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
@@ -51,4 +57,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.bundles.test)
+
+    androidTestImplementation(libs.bundles.android.test)
 }
