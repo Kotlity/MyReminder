@@ -3,7 +3,7 @@ package com.kotlity.core.alarm.domain
 import com.kotlity.core.domain.util.AlarmValidationError
 import com.kotlity.core.domain.util.Result
 
-private const val MAX_TITLE_LENGTH = 20
+private const val MAX_TITLE_LENGTH = 30
 
 class AlarmReminderTitleValidator {
 

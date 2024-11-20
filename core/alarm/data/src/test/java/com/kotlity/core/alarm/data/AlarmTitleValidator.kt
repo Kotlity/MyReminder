@@ -46,12 +46,22 @@ class AlarmTitleValidator: BaseValidator() {
 
     @Test
     fun `alarm reminder title validator too long returns error`() {
-        val tooLongTitleReminder = "This is a very long test reminder"
+        val tooLongTitleReminder = "This is a very long test reminder so it is not accessible"
         val result = Result.Error(error = AlarmValidationError.AlarmTitleValidation.TOO_LONG)
         every { alarmReminderTitleValidator(tooLongTitleReminder) } returns result
         alarmReminderTitleValidator(tooLongTitleReminder)
         verify { alarmReminderTitleValidator(tooLongTitleReminder) }
         assertThat(alarmReminderTitleValidator(tooLongTitleReminder)).isEqualTo(result)
+    }
+
+    @Test
+    fun `alarm reminder title validator returns success`() {
+        val accessibleReminderTitle = "Feed the cat"
+        val result = Result.Success(Unit)
+        every { alarmReminderTitleValidator(accessibleReminderTitle) } returns result
+        alarmReminderTitleValidator(accessibleReminderTitle)
+        verify { alarmReminderTitleValidator(accessibleReminderTitle) }
+        assertThat(alarmReminderTitleValidator(accessibleReminderTitle)).isEqualTo(result)
     }
 
 }
