@@ -6,5 +6,5 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val alarmSchedulerModule = module {
-    single<Scheduler> { AlarmScheduler(androidContext()) }
+    single<Scheduler> { AlarmScheduler(get(), androidContext()) }
 }
