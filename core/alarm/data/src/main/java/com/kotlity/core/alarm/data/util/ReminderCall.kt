@@ -11,11 +11,11 @@ inline fun <reified T> reminderCall(
         block()
     } catch (e: Exception) {
         val error = when(e) {
-            is SecurityException -> Result.Error(AlarmError.SECURITY)
-            is IllegalArgumentException -> Result.Error(AlarmError.ILLEGAL_ARGUMENT)
-            is PendingIntent.CanceledException -> Result.Error(AlarmError.CANCELED)
-            else -> Result.Error(AlarmError.UNKNOWN)
+            is SecurityException -> AlarmError.SECURITY
+            is IllegalArgumentException -> AlarmError.ILLEGAL_ARGUMENT
+            is PendingIntent.CanceledException -> AlarmError.CANCELED
+            else -> AlarmError.UNKNOWN
         }
-        error
+        Result.Error(error)
     }
 }
