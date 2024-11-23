@@ -20,13 +20,13 @@ class RemindersRepositoryImplementation(
 ): RemindersRepository {
 
     override fun getAllReminders(): Flow<Result<List<Reminder>, DatabaseError>> {
-        return databaseFlowCall(dispatcherHandler.io, reminderDao.getAllReminders()) { reminderEntities ->
-            if (reminderEntities.isEmpty()) Result.Success(emptyList())
-            else {
-                val reminders = reminderEntities.map { it.toReminder() }
-                Result.Success(reminders)
+        return databaseFlowCall(
+            dispatcher = dispatcherHandler.io,
+            flowProvider = { reminderDao.getAllReminders() },
+            mapper = { reminderEntities ->
+                reminderEntities.map { it.toReminder() }
             }
-        }
+        )
     }
 
     override suspend fun deleteReminder(id: Long): Result<Unit, ReminderError> {

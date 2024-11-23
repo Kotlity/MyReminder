@@ -10,6 +10,7 @@ import com.kotlity.core.data.local.di.reminderDaoModule
 import com.kotlity.core.data.local.di.reminderDatabaseModule
 import com.kotlity.core.notification.data.di.notificationManagerModule
 import com.kotlity.core.notification.data.di.notificationServiceModule
+import com.kotlity.feature_reminders.data.di.remindersRepositoryModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -36,7 +37,8 @@ private fun Application.setupKoin() {
             alarmManagerModule,
             alarmSchedulerModule,
             reminderDatabaseModule,
-            reminderDaoModule
+            reminderDaoModule,
+            remindersRepositoryModule
         )
     }
 }

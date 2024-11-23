@@ -9,7 +9,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.verify
 import org.junit.Test
 
-class AlarmTitleValidator: BaseValidator() {
+class AlarmReminderTitleValidatorTest: BaseValidator() {
 
     @MockK
     private lateinit var alarmReminderTitleValidator: AlarmReminderTitleValidator

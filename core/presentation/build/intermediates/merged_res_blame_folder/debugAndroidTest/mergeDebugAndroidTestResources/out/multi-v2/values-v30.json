@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.kotlity.core.presentation.test.presentation-mergeDebugAndroidTestResources-45:/values-v30/values-v30.xml",
+            "outputFile": "com.kotlity.core.presentation.test.presentation-mergeDebugAndroidTestResources-61:/values-v30/values-v30.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\d7eb7fc6aab929368c13d325431e5bfd\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\797812f5e4e68ffcfa8057299d2a8b61\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

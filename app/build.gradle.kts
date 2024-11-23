@@ -65,6 +65,8 @@ dependencies {
     implementation(project(":core:alarm:domain"))
     implementation(project(":core:notification:data"))
     implementation(project(":core:notification:domain"))
+    implementation(project(":feature_reminders:domain"))
+    implementation(project(":feature_reminders:data"))
 
     implementation(libs.bundles.android.core)
 

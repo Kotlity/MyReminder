@@ -1,6 +1,7 @@
 package com.kotlity.core.data.local
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -15,9 +16,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.koin.test.KoinTest
 import org.koin.test.inject
 
+@RunWith(AndroidJUnit4::class)
 @SmallTest
 class ReminderDaoTest: KoinTest {
 
