@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kotlity.core.alarm.data.di.alarmManagerModule
 import com.kotlity.core.alarm.data.di.alarmSchedulerModule
 import com.kotlity.core.data.local.di.reminderDaoModule
@@ -11,6 +12,7 @@ import com.kotlity.core.data.local.di.reminderDatabaseModule
 import com.kotlity.core.notification.data.di.notificationManagerModule
 import com.kotlity.core.notification.data.di.notificationServiceModule
 import com.kotlity.feature_reminders.data.di.remindersRepositoryModule
+import com.kotlity.feature_reminders.presentation.di.remindersViewModelModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -24,6 +26,7 @@ class MyReminderApplication: Application() {
         super.onCreate()
         setupKoin()
         setupNotificationChannel(notificationManager)
+        AndroidThreeTen.init(this)
     }
 }
 
@@ -38,7 +41,8 @@ private fun Application.setupKoin() {
             alarmSchedulerModule,
             reminderDatabaseModule,
             reminderDaoModule,
-            remindersRepositoryModule
+            remindersRepositoryModule,
+            remindersViewModelModule
         )
     }
 }
@@ -55,5 +59,4 @@ private fun Application.setupNotificationChannel(notificationManager: Notificati
         importance
     ).apply { description = notificationChannelDescription }
     notificationManager.createNotificationChannel(notificationChannel)
-
 }

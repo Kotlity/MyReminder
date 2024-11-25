@@ -67,6 +67,7 @@ dependencies {
     implementation(project(":core:notification:domain"))
     implementation(project(":feature_reminders:domain"))
     implementation(project(":feature_reminders:data"))
+    implementation(project(":feature_reminders:presentation"))
 
     implementation(libs.bundles.android.core)
 
@@ -81,6 +82,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.bundles.navigation)
+
+    implementation(libs.jakeWharton.threeTenabp)
 
     debugImplementation(libs.bundles.compose.debug)
 

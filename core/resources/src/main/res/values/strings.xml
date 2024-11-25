@@ -57,5 +57,7 @@
     <string name="notificationChannelName" translatable="false">MyReminder</string>
     <string name="notificationChannelDescription" translatable="false">This channel is used to send reminder notifications</string>
     <string name="notificationContentText">Hurry up! Don\'t forget your task :)</string>
+    
+    <string name="reminderSuccessfullyDeleted">The alarm has been removed !</string>
 
 </resources>

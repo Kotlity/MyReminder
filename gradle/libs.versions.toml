@@ -18,6 +18,7 @@ truth = "1.4.4"
 mockk = "1.13.4"
 turbine = "0.7.0"
 runner = "1.6.2"
+threeTenabp = "1.4.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +58,8 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+jakeWharton-threeTenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threeTenabp" }
 
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
