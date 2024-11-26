@@ -2,7 +2,6 @@ package com.kotlity.feature_reminders.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kotlity.core.domain.util.DispatcherHandler
 import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.domain.util.onError
 import com.kotlity.core.domain.util.onErrorFlow
@@ -26,10 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RemindersViewModel(
-    private val remindersRepository: RemindersRepository,
-    private val dispatcherHandler: DispatcherHandler
-): ViewModel() {
+class RemindersViewModel(private val remindersRepository: RemindersRepository): ViewModel() {
 
     private val _state = MutableStateFlow(RemindersState())
     val state = _state
@@ -89,13 +85,13 @@ class RemindersViewModel(
     }
 
     private fun onReminderEdit(id: Long) {
-        viewModelScope.launch(dispatcherHandler.io) {
+        viewModelScope.launch {
             sendOneTimeEventToChannel(ReminderOneTimeEvent.Edit(id))
         }
     }
 
     private fun onReminderDelete(id: Long) {
-        viewModelScope.launch(dispatcherHandler.io) {
+        viewModelScope.launch {
             remindersRepository.deleteReminder(id)
                 .onSuccess {
                     val response = UiText.StringResource(com.kotlity.core.resources.R.string.reminderSuccessfullyDeleted)
@@ -106,7 +102,7 @@ class RemindersViewModel(
     }
 
     private fun onReminderAdd() {
-        viewModelScope.launch(dispatcherHandler.io) {
+        viewModelScope.launch {
             sendOneTimeEventToChannel(ReminderOneTimeEvent.Add)
         }
     }

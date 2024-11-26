@@ -83,7 +83,7 @@ dependencies {
 
     implementation(libs.bundles.navigation)
 
-    implementation(libs.jakeWharton.threeTenabp)
+    implementation(libs.threeTenabp)
 
     debugImplementation(libs.bundles.compose.debug)
 

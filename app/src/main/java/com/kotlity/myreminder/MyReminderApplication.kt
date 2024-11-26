@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kotlity.core.alarm.data.di.alarmManagerModule
 import com.kotlity.core.alarm.data.di.alarmSchedulerModule
 import com.kotlity.core.data.local.di.reminderDaoModule
@@ -26,7 +25,6 @@ class MyReminderApplication: Application() {
         super.onCreate()
         setupKoin()
         setupNotificationChannel(notificationManager)
-        AndroidThreeTen.init(this)
     }
 }
 

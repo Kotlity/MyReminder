@@ -20,6 +20,7 @@ import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +73,9 @@ class RemindersRepositoryTest: KoinTest {
         printLogger()
         modules(testDispatcherHandlerModule)
     }
+
+    @get:Rule
+    val mockKRule = MockKRule(this)
 
     @Before
     fun setup() {

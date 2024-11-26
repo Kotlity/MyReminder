@@ -52,9 +52,10 @@ dependencies {
 
     implementation(libs.bundles.koin)
 
-    implementation(libs.jakeWharton.threeTenabp)
+    implementation(libs.threeTenabp)
 
     testImplementation(libs.bundles.test)
+    testImplementation(libs.threeTenabp)
 
     androidTestImplementation(libs.bundles.android.test)
 }
