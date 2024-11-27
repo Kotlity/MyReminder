@@ -20,8 +20,8 @@ import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
-import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,9 +40,11 @@ import org.koin.test.inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class RemindersRepositoryTest: KoinTest {
 
-    private val reminderDao: ReminderDao = mockk()
+    @MockK
+    private lateinit var reminderDao: ReminderDao
 
-    private val scheduler: Scheduler = mockk()
+    @MockK
+    private lateinit var scheduler: Scheduler
 
     private val dispatcherHandler by inject<DispatcherHandler>()
     private lateinit var remindersRepository: RemindersRepository
