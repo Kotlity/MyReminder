@@ -16,4 +16,10 @@ object ResourcesConstant {
     val _10dp = 10.dp
     val _15dp = 15.dp
     val _20dp = 20.dp
+
+    const val _0_28 = 0.28f
+    const val _0_71 = 0.71f
+    const val _1f = 1f
+
+    const val _500 = 500
 }

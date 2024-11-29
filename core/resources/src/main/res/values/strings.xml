@@ -60,4 +60,9 @@
     
     <string name="reminderSuccessfullyDeleted">The alarm has been removed !</string>
 
+
+    <string name="emptyRemindersLogoDescription">Empty reminders logo</string>
+    <string name="addTaskIconDescription">Add task description</string>
+    <string name="addTaskAnimatedContentLabel">Add task label</string>
+
 </resources>

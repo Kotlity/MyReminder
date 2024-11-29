@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.kotlity.core.resources.ResourcesConstant._13sp
 import com.kotlity.core.resources.ResourcesConstant._14sp
 import com.kotlity.core.resources.ResourcesConstant._15sp
@@ -37,7 +38,7 @@ val Typography = Typography(
     ),
     labelSmall = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = _13sp,
+        fontSize = _16sp, // _13sp
         fontWeight = FontWeight.Bold,
         color = onTertiary
     ),

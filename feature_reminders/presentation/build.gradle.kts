@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.kotlity.feature_reminders.presentation"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
@@ -37,6 +37,12 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+    packaging {
+        resources {
+            merges += "META-INF/LICENSE.md"
+            merges += "META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
@@ -53,6 +59,8 @@ dependencies {
     implementation(libs.bundles.koin)
 
     implementation(libs.threeTenabp)
+
+    debugImplementation(libs.bundles.compose.debug)
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.threeTenabp)
