@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.kotlity.core.presentation.util.AnimatedVisibilityContent
 import com.kotlity.core.resources.R.drawable.add_main_task_arrow
 import com.kotlity.core.resources.R.string.addYourTask
 
@@ -15,5 +16,9 @@ fun AddTaskArrow(
     @StringRes labelRes: Int = addYourTask
 ) {
 
+    AnimatedVisibilityContent(
+        condition = isAddTaskArrowVisible
+    ) { contentModifier ->
 
+    }
 }
