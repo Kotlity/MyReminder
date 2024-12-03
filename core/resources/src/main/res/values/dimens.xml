@@ -13,5 +13,6 @@
 
     <dimen name="minus10dp">-10dp</dimen>
     <dimen name="minus20dp">-20dp</dimen>
+    <dimen name="minus25dp">-25dp</dimen>
 
 </resources>

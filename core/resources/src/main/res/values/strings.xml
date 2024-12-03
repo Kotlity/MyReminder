@@ -64,5 +64,6 @@
     <string name="emptyRemindersLogoDescription">Empty reminders logo</string>
     <string name="addTaskIconDescription">Add task description</string>
     <string name="addTaskAnimatedContentLabel">Add task label</string>
+    <string name="addTaskArrowDescription">Add task arrow</string>
 
 </resources>

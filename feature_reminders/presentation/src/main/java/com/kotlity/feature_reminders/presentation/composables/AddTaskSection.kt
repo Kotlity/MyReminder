@@ -65,7 +65,9 @@ fun AddTaskSection(
     onAddTaskClick: () -> Unit
 ) {
 
-    val addIconOffsetInPx by animateIntAsState(targetValue = if (isAddTaskLabelVisible) 0 else with(LocalDensity.current) { -25.dp.roundToPx() },
+    val addIconOffsetInPx by animateIntAsState(targetValue = if (isAddTaskLabelVisible) 0 else with(LocalDensity.current) {
+        dimensionResource(id = R.dimen.minus25dp).roundToPx()
+    },
         label = "",
         animationSpec = tween(_500)
     )
