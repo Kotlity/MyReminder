@@ -3,6 +3,7 @@ package com.kotlity.feature_reminders.data
 import com.kotlity.core.alarm.domain.Scheduler
 import com.kotlity.core.data.local.ReminderDao
 import com.kotlity.core.data.local.toReminder
+import com.kotlity.core.data.local.toReminderEntity
 import com.kotlity.core.data.local.util.databaseCall
 import com.kotlity.core.data.local.util.databaseFlowCall
 import com.kotlity.core.domain.Reminder
@@ -29,14 +30,27 @@ class RemindersRepositoryImplementation(
         )
     }
 
-    override suspend fun deleteReminder(id: Long): Result<Unit, ReminderError> {
+    override suspend fun deleteReminder(id: Long): Result<Reminder?, ReminderError> {
+        var deletedReminder: Reminder? = null
         val databaseResult = databaseCall(dispatcherHandler.io) {
+            deletedReminder = reminderDao.getReminderById(id)?.toReminder()
             reminderDao.deleteReminder(id)
             Result.Success(Unit)
         }
         if (databaseResult is Result.Error) return Result.Error(ReminderError.Database(databaseResult.error))
-        val result = alarmScheduler.cancelReminder(id)
-        if (result is Result.Error) return Result.Error(ReminderError.Alarm(result.error))
+        val alarmResult = alarmScheduler.cancelReminder(id)
+        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
+        return Result.Success(deletedReminder)
+    }
+
+    override suspend fun restoreReminder(reminder: Reminder): Result<Unit, ReminderError> {
+        val databaseResult = databaseCall(dispatcherHandler.io) {
+            reminderDao.addReminder(reminder.toReminderEntity())
+            Result.Success(Unit)
+        }
+        if (databaseResult is Result.Error) return Result.Error(ReminderError.Database(databaseResult.error))
+        val alarmResult = alarmScheduler.addOrUpdateReminder(reminder)
+        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         return Result.Success(Unit)
     }
 }

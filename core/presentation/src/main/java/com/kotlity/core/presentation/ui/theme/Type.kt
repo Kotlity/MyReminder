@@ -5,14 +5,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import com.kotlity.core.resources.ResourcesConstant._13sp
 import com.kotlity.core.resources.ResourcesConstant._14sp
 import com.kotlity.core.resources.ResourcesConstant._15sp
 import com.kotlity.core.resources.ResourcesConstant._16sp
-import com.kotlity.core.resources.ResourcesConstant._18sp
 import com.kotlity.core.resources.ResourcesConstant._19sp
-import com.kotlity.core.resources.ResourcesConstant._22sp
+import com.kotlity.core.resources.ResourcesConstant._24sp
+import com.kotlity.core.resources.ResourcesConstant._26sp
+import com.kotlity.core.resources.ResourcesConstant._30sp
 
 private val CoolVetica = FontFamily(
     Font(resId = com.kotlity.core.resources.R.font.coolvetica_condensed),
@@ -33,24 +32,24 @@ val AlteHassGrotesk = FontFamily(
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = _22sp,
+        fontSize = _30sp,
         color = black
     ),
     labelSmall = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = _16sp, // _13sp
+        fontSize = _14sp,
         fontWeight = FontWeight.Bold,
         color = onTertiary
     ),
     titleMedium = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = _18sp,
+        fontSize = _24sp,
         fontWeight = FontWeight.Bold,
         color = black
     ),
     titleLarge = TextStyle(
         fontFamily = CoolVetica,
-        fontSize = _19sp,
+        fontSize = _26sp,
         fontWeight = FontWeight.Bold,
         color = black
     ),
@@ -66,7 +65,7 @@ val Typography = Typography(
     ),
     bodySmall = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = _13sp,
+        fontSize = _15sp,
         color = grey
     ),
     displayLarge = TextStyle(

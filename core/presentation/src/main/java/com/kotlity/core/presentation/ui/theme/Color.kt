@@ -17,5 +17,8 @@ val halfGrey = Color(0, 0, 0, 128)
 val halfGreyContainer = Color(240, 240, 240)
 val green = Color(85, 214, 85)
 val red = Color(255, 102, 102)
+val linearGradientColor1 = Color(0, 102, 204)
+val linearGradientColor2 = linearGradientColor1.copy(alpha = 0.2f)
+
 
 val cardBorderColor = Color(0, 0, 0)

@@ -4,8 +4,6 @@
 
     <string name="reminderDatabaseName">reminder_db</string>
 
-    <string name="app_title">TestReminder</string>
-
     <string name="addTask">Add Task</string>
     <string name="addYourTask">add your task</string>
     <string name="addYourTaskFirst">Add your Task first…</string>
@@ -59,11 +57,14 @@
     <string name="notificationContentText">Hurry up! Don\'t forget your task :)</string>
     
     <string name="reminderSuccessfullyDeleted">The alarm has been removed !</string>
+    <string name="undo">Undo</string>
 
 
     <string name="emptyRemindersLogoDescription">Empty reminders logo</string>
     <string name="addTaskIconDescription">Add task description</string>
     <string name="addTaskAnimatedContentLabel">Add task label</string>
     <string name="addTaskArrowDescription">Add task arrow</string>
+    <string name="expandIconDescription">Expand icon description</string>
+    <string name="remindersContentSectionLabel">Reminders content section label</string>
 
 </resources>

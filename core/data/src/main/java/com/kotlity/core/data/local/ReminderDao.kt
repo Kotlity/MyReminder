@@ -19,6 +19,9 @@ interface ReminderDao {
     @Query("DELETE FROM ReminderEntity WHERE id = :id")
     suspend fun deleteReminder(id: Long)
 
+    @Query("SELECT * FROM ReminderEntity WHERE id = :id")
+    suspend fun getReminderById(id: Long): ReminderEntity?
+
     @Query("SELECT * FROM ReminderEntity")
     fun getAllReminders(): Flow<List<ReminderEntity>>
 }

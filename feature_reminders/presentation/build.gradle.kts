@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
@@ -58,7 +59,11 @@ dependencies {
 
     implementation(libs.bundles.koin)
 
+    implementation(libs.bundles.navigation)
+
     implementation(libs.threeTenabp)
+
+    implementation(libs.cloudy)
 
     debugImplementation(libs.bundles.compose.debug)
 

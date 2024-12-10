@@ -14,6 +14,7 @@ import com.kotlity.feature_reminders.domain.RemindersRepository
 import com.kotlity.feature_reminders.presentation.actions.RemindersAction
 import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.presentation.mappers.toReminderUi
+import com.kotlity.feature_reminders.presentation.states.SelectedReminderState
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -172,31 +173,33 @@ class RemindersViewModelTest {
     }
 
     @Test
-    fun `onReminderSelected updates selectedReminderId with passed id`() = runTest {
+    fun `onReminderSelected updates selectedReminderId and x and y coordinates with passed id and coordinates`() = runTest {
         every { remindersRepository.getAllReminders() } returns emptyFlow()
         remindersViewModel.state.test {
-            val initialState = awaitItem()
-            assertThat(initialState.selectedReminderId).isNull()
-            remindersViewModel.onAction(RemindersAction.OnReminderSelected(1))
-            val updatedState = awaitItem()
-            assertThat(updatedState.selectedReminderId).isEqualTo(1)
+            val initialSelectedReminderState = awaitItem().selectedReminderState
+            assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
+            remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 1, xPosition = 80, yPosition = 125))
+            val updatedSelectedReminderState = awaitItem().selectedReminderState
+            val expectedSelectedReminderState = SelectedReminderState(id = 1, xPosition = 80, yPosition = 125)
+            assertThat(updatedSelectedReminderState).isEqualTo(expectedSelectedReminderState)
         }
     }
 
     @Test
-    fun `onReminderUnselected sets selectedReminderId to null`() = runTest {
+    fun `onReminderUnselected sets selectedReminderId and x and y coordinates to null`() = runTest {
         every { remindersRepository.getAllReminders() } returns emptyFlow()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             remindersViewModel.state.collect { }
         }
-        val initialSelectedReminderId = remindersViewModel.state.value.selectedReminderId
-        assertThat(initialSelectedReminderId).isNull()
-        remindersViewModel.onAction(RemindersAction.OnReminderSelected(2))
-        val updatedSelectedReminderId = remindersViewModel.state.value.selectedReminderId
-        assertThat(updatedSelectedReminderId).isEqualTo(2)
-        remindersViewModel.onAction(RemindersAction.OnReminderUnselected)
-        val nullableSelectedReminderId = remindersViewModel.state.value.selectedReminderId
-        assertThat(nullableSelectedReminderId).isNull()
+        val initialSelectedReminderState = remindersViewModel.state.value.selectedReminderState
+        assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
+        remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 2, xPosition = 80, yPosition = 270))
+        val updatedSelectedReminderState = remindersViewModel.state.value.selectedReminderState
+        val expectedUpdatedSelectedReminderState = SelectedReminderState(id = 2, xPosition = 80, yPosition = 270)
+        assertThat(updatedSelectedReminderState).isEqualTo(expectedUpdatedSelectedReminderState)
+        remindersViewModel.onAction(RemindersAction.OnReminderUnselect)
+        val nullableSelectedReminderState = remindersViewModel.state.value.selectedReminderState
+        assertThat(nullableSelectedReminderState).isEqualTo(initialSelectedReminderState)
     }
 
     @Test

@@ -85,6 +85,8 @@ dependencies {
 
     implementation(libs.threeTenabp)
 
+    implementation(libs.cloudy)
+
     debugImplementation(libs.bundles.compose.debug)
 
     testImplementation(libs.bundles.test)

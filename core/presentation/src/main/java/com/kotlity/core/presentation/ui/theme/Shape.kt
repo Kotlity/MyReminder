@@ -5,9 +5,11 @@ import androidx.compose.material3.Shapes
 import com.kotlity.core.resources.ResourcesConstant._10dp
 import com.kotlity.core.resources.ResourcesConstant._15dp
 import com.kotlity.core.resources.ResourcesConstant._20dp
+import com.kotlity.core.resources.ResourcesConstant._30dp
 
 val Shapes = Shapes(
-    small = RoundedCornerShape(_10dp),
-    medium = RoundedCornerShape(_15dp),
-    large = RoundedCornerShape(_20dp)
+    extraSmall = RoundedCornerShape(_10dp),
+    small = RoundedCornerShape(_15dp),
+    medium = RoundedCornerShape(_20dp),
+    large = RoundedCornerShape(_30dp)
 )

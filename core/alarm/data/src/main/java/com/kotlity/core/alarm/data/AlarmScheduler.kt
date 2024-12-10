@@ -17,12 +17,12 @@ class AlarmScheduler(
     private val alarmManager: AlarmManager,
     private val context: Context
 ): Scheduler {
-
-    private fun canScheduleExactAlarms() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms() else true
+    private val canScheduleExactAlarms: Boolean
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms() else true
 
     override fun addOrUpdateReminder(reminder: Reminder): Result<Unit, AlarmError> {
         return reminderCall {
-            if (!canScheduleExactAlarms()) return@reminderCall Result.Error(error = AlarmError.SECURITY)
+            if (!canScheduleExactAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
             val intent = Intent(context, AlarmReceiver::class.java).apply {
                 val bundle = bundleOf(
                     context.getString(com.kotlity.core.resources.R.string.reminderIdExtraKey) to reminder.id,

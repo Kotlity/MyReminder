@@ -19,6 +19,7 @@ mockk = "1.13.4"
 turbine = "0.7.0"
 runner = "1.6.2"
 threeTenabp = "1.7.0"
+cloudy = "0.2.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -60,6 +61,8 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 threeTenabp = { module = "org.threeten:threetenbp", version.ref = "threeTenabp" }
+
+cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
 
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 

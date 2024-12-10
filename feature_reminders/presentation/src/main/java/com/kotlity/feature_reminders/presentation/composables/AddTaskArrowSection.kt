@@ -38,6 +38,10 @@ import com.kotlity.core.presentation.ui.theme.MyReminderTheme
 import com.kotlity.core.presentation.ui.theme.darkBlack
 import com.kotlity.core.presentation.util.PreviewAnnotation
 import com.kotlity.core.resources.R.*
+import com.kotlity.core.resources.ResourcesConstant._1200
+import com.kotlity.core.resources.ResourcesConstant._1f
+import com.kotlity.core.resources.ResourcesConstant._300
+import com.kotlity.core.resources.ResourcesConstant._900
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,15 +73,12 @@ fun AddTaskArrowSection(
 
     LaunchedEffect(key1 = Unit) {
         launch {
-            arrowAnimation.animateTo(1f, tween(durationMillis = 1200, easing = FastOutLinearInEasing))
+            arrowAnimation.animateTo(_1f, tween(durationMillis = _1200, easing = FastOutLinearInEasing))
+            rightArrowPointerAnimation.animateTo(_1f, tween(durationMillis = _300))
         }
         launch {
-            delay(1200)
-            rightArrowPointerAnimation.animateTo(1f, tween(durationMillis = 300))
-        }
-        launch {
-            delay(900)
-            textAlphaAnimation.animateTo(1f, tween(900))
+            delay(_900.toLong())
+            textAlphaAnimation.animateTo(_1f, tween(_900))
         }
     }
 
@@ -181,7 +182,7 @@ private fun DrawScope.drawArrowText(
 ) {
     val textLayoutResult = textMeasurer.measure(text, textStyle)
     rotate(262f, textOffset) {
-        translate(110f, -35f) {
+        translate(90f, -35f) {
             drawText(
                 textLayoutResult = textLayoutResult,
                 topLeft = textOffset

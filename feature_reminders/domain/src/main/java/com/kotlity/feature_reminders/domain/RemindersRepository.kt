@@ -10,5 +10,7 @@ interface RemindersRepository {
 
     fun getAllReminders(): Flow<Result<List<Reminder>, DatabaseError>>
 
-    suspend fun deleteReminder(id: Long): Result<Unit, ReminderError>
+    suspend fun deleteReminder(id: Long): Result<Reminder?, ReminderError>
+
+    suspend fun restoreReminder(reminder: Reminder): Result<Unit, ReminderError>
 }

@@ -4,9 +4,10 @@ import android.content.Context
 import com.kotlity.core.domain.util.AlarmError
 import com.kotlity.core.domain.util.AlarmValidationError
 import com.kotlity.core.domain.util.DatabaseError
+import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.resources.R
 
-fun DatabaseError.toString(context: Context): String {
+private fun DatabaseError.toString(context: Context): String {
     val resId = when(this) {
         DatabaseError.ILLEGAL_STATE -> R.string.databaseIllegalStateException
         DatabaseError.SQLITE_CONSTRAINT -> R.string.sqliteConstraintException
@@ -17,7 +18,7 @@ fun DatabaseError.toString(context: Context): String {
     return context.getString(resId)
 }
 
-fun AlarmError.toString(context: Context): String {
+private fun AlarmError.toString(context: Context): String {
     val resId = when(this) {
         AlarmError.SECURITY -> R.string.alarmSecurityException
         AlarmError.ILLEGAL_ARGUMENT -> R.string.alarmIllegalArgumentException
@@ -25,6 +26,13 @@ fun AlarmError.toString(context: Context): String {
         AlarmError.UNKNOWN -> R.string.unknownException
     }
     return context.getString(resId)
+}
+
+fun ReminderError.toString(context: Context): String {
+    return when(this) {
+        is ReminderError.Alarm -> error.toString(context)
+        is ReminderError.Database -> error.toString(context)
+    }
 }
 
 fun AlarmValidationError.toString(context: Context): String {

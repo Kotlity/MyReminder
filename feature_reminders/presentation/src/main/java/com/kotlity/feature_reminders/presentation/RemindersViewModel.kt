@@ -2,6 +2,7 @@ package com.kotlity.feature_reminders.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kotlity.core.domain.Reminder
 import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.domain.util.onError
 import com.kotlity.core.domain.util.onErrorFlow
@@ -10,6 +11,7 @@ import com.kotlity.core.domain.util.onSuccess
 import com.kotlity.core.domain.util.onSuccessFlow
 import com.kotlity.core.presentation.util.Event
 import com.kotlity.core.presentation.util.UiText
+import com.kotlity.core.resources.ResourcesConstant._5000
 import com.kotlity.feature_reminders.domain.RemindersRepository
 import com.kotlity.feature_reminders.presentation.actions.RemindersAction
 import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
@@ -28,27 +30,29 @@ import kotlinx.coroutines.launch
 class RemindersViewModel(private val remindersRepository: RemindersRepository): ViewModel() {
 
     private val _state = MutableStateFlow(RemindersState())
-    val state = _state
+    internal val state = _state
         .onStart {
             onAction(RemindersAction.OnLoadReminders)
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(_5000.toLong()),
             initialValue = RemindersState()
         )
 
     private val _eventChannel = Channel<Event<ReminderOneTimeEvent, ReminderError>>()
     val eventFlow = _eventChannel.receiveAsFlow()
 
+    private var recentlyRemovedReminder: Reminder? = null
+
     fun onAction(remindersAction: RemindersAction) {
         when(remindersAction) {
-            is RemindersAction.OnReminderSelected -> onReminderSelected(remindersAction.id)
+            is RemindersAction.OnReminderSelect -> onReminderSelect(remindersAction.position, remindersAction.id)
             is RemindersAction.OnReminderEdit -> onReminderEdit(remindersAction.id)
             is RemindersAction.OnReminderDelete -> onReminderDelete(remindersAction.id)
-            RemindersAction.OnReminderAdd -> onReminderAdd()
+            RemindersAction.OnReminderRestore -> onReminderRestore()
             RemindersAction.OnIsAlertDialogRationaleVisibleUpdate -> onIsAlertDialogRationaleVisibleUpdate()
-            RemindersAction.OnReminderUnselected -> onReminderUnselected()
+            RemindersAction.OnReminderUnselect -> onReminderUnselect()
             RemindersAction.OnLoadReminders -> onLoadReminders()
         }
     }
@@ -78,9 +82,14 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
             .launchIn(viewModelScope)
     }
 
-    private fun onReminderSelected(id: Long) {
+    private fun onReminderSelect(position: Pair<Int, Int>, id: Long) {
         _state.update {
-            it.copy(selectedReminderId = id)
+            it.copy(
+                selectedReminderState = it.selectedReminderState.copy(
+                    id = id,
+                    position = position
+                )
+            )
         }
     }
 
@@ -88,22 +97,29 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
         viewModelScope.launch {
             sendOneTimeEventToChannel(ReminderOneTimeEvent.Edit(id))
         }
+        onReminderUnselect()
     }
 
     private fun onReminderDelete(id: Long) {
         viewModelScope.launch {
             remindersRepository.deleteReminder(id)
-                .onSuccess {
+                .onSuccess { removedReminder ->
+                    recentlyRemovedReminder = removedReminder
                     val response = UiText.StringResource(com.kotlity.core.resources.R.string.reminderSuccessfullyDeleted)
                     sendOneTimeEventToChannel(ReminderOneTimeEvent.Delete(response))
                 }
                 .onError { sendErrorToChannel(it) }
         }
+        onReminderUnselect()
     }
 
-    private fun onReminderAdd() {
+    private fun onReminderRestore() {
         viewModelScope.launch {
-            sendOneTimeEventToChannel(ReminderOneTimeEvent.Add)
+            recentlyRemovedReminder?.let { reminder ->
+                remindersRepository.restoreReminder(reminder)
+                    .onError { sendErrorToChannel(it) }
+            }
+            recentlyRemovedReminder = null
         }
     }
 
@@ -113,9 +129,14 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
         }
     }
 
-    private fun onReminderUnselected() {
+    private fun onReminderUnselect() {
         _state.update {
-            it.copy(selectedReminderId = null)
+            it.copy(
+                selectedReminderState = it.selectedReminderState.copy(
+                    id = null,
+                    position = null
+                )
+            )
         }
     }
 

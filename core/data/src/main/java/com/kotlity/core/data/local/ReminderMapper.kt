@@ -10,3 +10,12 @@ fun ReminderEntity.toReminder(): Reminder {
         periodicity = periodicity
     )
 }
+
+fun Reminder.toReminderEntity(): ReminderEntity {
+    return ReminderEntity(
+        id = id,
+        title = title,
+        reminderTime = reminderTime,
+        periodicity = periodicity
+    )
+}

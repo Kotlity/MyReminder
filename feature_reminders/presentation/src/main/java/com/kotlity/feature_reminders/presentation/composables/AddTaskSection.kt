@@ -79,7 +79,7 @@ fun AddTaskSection(
     ) {
         Image(
             modifier = Modifier
-                .size(dimensionResource(id = R.dimen._46dp))
+                .size(dimensionResource(id = R.dimen._36dp))
                 .zIndex(_1f)
                 .offset {
                     IntOffset(addIconOffsetInPx, 0)
@@ -104,7 +104,7 @@ fun AddTaskSection(
         ) { isTaskLabelVisible ->
             if (isTaskLabelVisible) {
                 Card(
-                    modifier = Modifier.offset(x = dimensionResource(id = R.dimen.minus10dp)),
+                    modifier = Modifier.offset(x = dimensionResource(id = R.dimen.minus8dp)),
                     onClick = onAddTaskClick,
                     shape = shape,
                     colors = CardDefaults.cardColors(containerColor = backgroundColor),
