@@ -102,7 +102,7 @@ private fun ColumnScope.ReminderDropdownMenuTextButton(
 
 @PreviewAnnotation
 @Composable
-fun ReminderDropdownMenuPreview() {
+private fun ReminderDropdownMenuPreview() {
     MyReminderTheme {
         ReminderPopupMenu(
             modifier = Modifier

@@ -32,7 +32,7 @@ import com.kotlity.core.presentation.ui.theme.MyReminderTheme
 import com.kotlity.core.presentation.ui.theme.linearGradientColor1
 import com.kotlity.core.presentation.util.PreviewAnnotation
 import com.kotlity.core.resources.R.*
-import com.kotlity.core.resources.ResourcesConstant._1_5f
+import com.kotlity.core.resources.ResourcesConstant._1_5
 import com.kotlity.feature_reminders.presentation.models.DisplayableReminderTime
 import com.kotlity.feature_reminders.presentation.models.ReminderUi
 import com.skydoves.cloudy.cloudy
@@ -89,7 +89,7 @@ fun Reminders(
 
 @PreviewAnnotation
 @Composable
-fun ReminderItemListWithPopupPreview() {
+private fun ReminderItemListWithPopupPreview() {
 
     var reminders by remember {
         mutableStateOf((0..10).map {
@@ -146,7 +146,7 @@ fun ReminderItemListWithPopupPreview() {
                 ReminderPopupMenu(
                     modifier = Modifier
                         .height(dimensionResource(id = dimen._80dp))
-                        .aspectRatio(_1_5f),
+                        .aspectRatio(_1_5),
                     onEditSectionClick = {
                         isReminderPopupMenuDisplayed = false
                         selectedReminderId = -1

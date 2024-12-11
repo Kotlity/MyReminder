@@ -127,7 +127,7 @@ fun AddTaskSection(
 
 @PreviewAnnotation
 @Composable
-fun AddTaskSectionPreview() {
+private fun AddTaskSectionPreview() {
     var isShowAddTaskLabel by rememberSaveable {
         mutableStateOf(true)
     }

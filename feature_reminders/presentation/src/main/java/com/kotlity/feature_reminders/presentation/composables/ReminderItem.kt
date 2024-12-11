@@ -124,7 +124,7 @@ fun ReminderItem(
 
 @PreviewAnnotation
 @Composable
-fun ReminderItemPreview() {
+private fun ReminderItemPreview() {
     MyReminderTheme {
         ReminderItem(
             modifier = Modifier

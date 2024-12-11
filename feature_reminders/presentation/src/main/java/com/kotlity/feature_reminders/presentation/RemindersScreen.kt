@@ -1,13 +1,18 @@
 package com.kotlity.feature_reminders.presentation
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -24,9 +29,13 @@ import com.kotlity.core.presentation.util.onSuccess
 import com.kotlity.core.presentation.util.toString
 import com.kotlity.feature_reminders.presentation.mappers.toIntOffset
 import com.kotlity.core.resources.R
+import com.kotlity.core.resources.ResourcesConstant
 import com.kotlity.core.resources.ResourcesConstant.BLUR_RADIUS_EFFECT
-import com.kotlity.core.resources.ResourcesConstant._1_5f
+import com.kotlity.core.resources.ResourcesConstant._1_5
+import com.kotlity.core.resources.ResourcesConstant._1f
 import com.kotlity.feature_reminders.presentation.actions.RemindersAction
+import com.kotlity.feature_reminders.presentation.composables.AddTaskArrowSection
+import com.kotlity.feature_reminders.presentation.composables.CirclesSection
 import com.kotlity.feature_reminders.presentation.composables.EmptyRemindersSection
 import com.kotlity.feature_reminders.presentation.composables.ReminderPopupMenu
 import com.kotlity.feature_reminders.presentation.composables.Reminders
@@ -70,6 +79,10 @@ internal fun RemindersScreenSection(
     val context = LocalContext.current
     val undoText = stringResource(id = R.string.undo)
 
+    var arrowOffset by remember {
+        mutableStateOf(IntOffset.Zero)
+    }
+
     val areRemindersEmpty = remindersState.reminders.isEmpty()
     val isPopupMenuDisplayed = remindersState.selectedReminderState.id != null
 
@@ -91,26 +104,35 @@ internal fun RemindersScreenSection(
             }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         TopSection(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             isAddTaskLabelVisible = areRemindersEmpty,
+            onAddTaskPositioned = { offset ->
+                arrowOffset = offset
+            },
             onAddTaskClick = onAddClick
         )
+        if (areRemindersEmpty) {
+            AddTaskArrowSection(
+                modifier = Modifier
+                    .width(dimensionResource(id = R.dimen._100dp))
+                    .aspectRatio(ResourcesConstant._0_5)
+                    .offset { arrowOffset }
+            )
+        }
         AnimatedContent(
             targetState = areRemindersEmpty,
             label = stringResource(id = R.string.remindersContentSectionLabel)
         ) { areRemindersEmpty ->
             if (areRemindersEmpty) {
-                EmptyRemindersSection(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.Center)
-                )
+                EmptyRemindersSection(modifier = Modifier.fillMaxSize())
+                CirclesSection(modifier = Modifier.fillMaxSize())
             } else {
                 Reminders(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .weight(_1f)
+                        .fillMaxWidth()
                         .cloudy(
                             radius = BLUR_RADIUS_EFFECT,
                             enabled = isPopupMenuDisplayed
@@ -139,7 +161,7 @@ internal fun RemindersScreenSection(
                 ReminderPopupMenu(
                     modifier = Modifier
                         .height(dimensionResource(id = R.dimen._80dp))
-                        .aspectRatio(_1_5f),
+                        .aspectRatio(_1_5),
                     onEditSectionClick = {
                         remindersState.selectedReminderState.id?.let {
                             onReminderAction(RemindersAction.OnReminderEdit(it))

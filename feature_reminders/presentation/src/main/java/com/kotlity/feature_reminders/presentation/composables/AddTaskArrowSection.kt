@@ -193,7 +193,7 @@ private fun DrawScope.drawArrowText(
 
 @PreviewAnnotation
 @Composable
-fun AddTaskArrowSectionPreview() {
+private fun AddTaskArrowSectionPreview() {
     MyReminderTheme {
         Box(
             modifier = Modifier.fillMaxSize(),

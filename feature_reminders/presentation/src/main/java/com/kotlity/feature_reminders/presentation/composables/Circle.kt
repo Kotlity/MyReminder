@@ -18,7 +18,7 @@ fun Circle(
             .drawBehind {
                 drawCircle(
                     color = color,
-                    style = Stroke(size.width / 2.5f)
+                    style = Stroke(size.width / 3)
                 )
             }
     )

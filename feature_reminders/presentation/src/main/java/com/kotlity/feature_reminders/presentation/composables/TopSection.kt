@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,19 +11,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.dimensionResource
@@ -35,7 +31,6 @@ import com.kotlity.core.presentation.ui.theme.MyReminderTheme
 import com.kotlity.core.presentation.ui.theme.darkBlack
 import com.kotlity.core.presentation.util.PreviewAnnotation
 import com.kotlity.core.resources.R
-import com.kotlity.core.resources.ResourcesConstant._0_5
 
 @Composable
 fun TopSection(
@@ -43,12 +38,9 @@ fun TopSection(
     @StringRes titleRes: Int = R.string.app_name,
     titleStyle: TextStyle = MaterialTheme.typography.headlineLarge,
     isAddTaskLabelVisible: Boolean,
+    onAddTaskPositioned: (IntOffset) -> Unit,
     onAddTaskClick: () -> Unit
 ) {
-
-    var arrowOffset by remember {
-        mutableStateOf(IntOffset.Zero)
-    }
 
     Column(modifier = modifier) {
         Box(modifier = Modifier
@@ -70,7 +62,7 @@ fun TopSection(
                         val size = layoutCoordinates.size
                         val x = position.x.toInt()
                         val y = position.y.toInt() + size.height
-                        arrowOffset = IntOffset(x, y)
+                        onAddTaskPositioned(IntOffset(x, y))
                     }
                 ,
                 isAddTaskLabelVisible = isAddTaskLabelVisible,
@@ -80,19 +72,11 @@ fun TopSection(
         Spacer(modifier = Modifier.padding(top = dimensionResource(id = R.dimen._25dp)))
         HorizontalDivider(color = darkBlack)
     }
-    if (isAddTaskLabelVisible) {
-        AddTaskArrowSection(
-            modifier = Modifier
-                .width(dimensionResource(id = R.dimen._100dp))
-                .aspectRatio(_0_5)
-                .offset { arrowOffset }
-        )
-    }
 }
 
 @PreviewAnnotation
 @Composable
-fun TopSectionPreview() {
+private fun TopSectionPreview() {
     MyReminderTheme {
         var isAddTaskLabelVisible by rememberSaveable {
             mutableStateOf(true)
@@ -106,7 +90,8 @@ fun TopSectionPreview() {
             isAddTaskLabelVisible = isAddTaskLabelVisible,
             onAddTaskClick = {
                 isAddTaskLabelVisible = !isAddTaskLabelVisible
-            }
+            },
+            onAddTaskPositioned = {}
         )
     }
 }

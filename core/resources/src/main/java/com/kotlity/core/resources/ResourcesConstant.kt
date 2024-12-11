@@ -23,7 +23,7 @@ object ResourcesConstant {
     const val _0_5 = 0.5f
     const val _0_71 = 0.71f
     const val _1f = 1f
-    const val _1_5f = 1.5f
+    const val _1_5 = 1.5f
 
     const val BLUR_RADIUS_EFFECT = 14
 
