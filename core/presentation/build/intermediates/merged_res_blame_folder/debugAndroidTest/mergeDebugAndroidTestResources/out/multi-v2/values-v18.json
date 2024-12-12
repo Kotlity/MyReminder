@@ -4,17 +4,7 @@
             "outputFile": "com.kotlity.core.presentation.test.presentation-mergeDebugAndroidTestResources-61:/values-v18/values-v18.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\079b866cb7537e6e4743ef86c0121a6d\\transformed\\appcompat-1.6.1\\res\\values-v18\\values-v18.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "48",
-                        "endOffsets": "99"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\0a1098c597920366ab6be0a82909369d\\transformed\\core-1.6.1\\res\\values-v18\\values.xml",
+                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\c02a688667053e333eacc1fbfb728823\\transformed\\core-1.6.1\\res\\values-v18\\values.xml",
                     "from": {
                         "startLines": "4,12",
                         "startColumns": "0,0",
@@ -30,6 +20,16 @@
                         "endLines": "10,18",
                         "endColumns": "8,8",
                         "endOffsets": "519,937"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\1e1476a8625fc5d8c59642cfa7c23502\\transformed\\appcompat-1.6.1\\res\\values-v18\\values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
                     }
                 }
             ]

@@ -71,6 +71,9 @@ fun AddTaskArrowSection(
 
     val textMeasurer = rememberTextMeasurer()
 
+    val textXTranslationInPx = dimensionResource(id = dimen._30dp).toPx()
+    val textYTranslationInPx = dimensionResource(id = dimen.minus12dp).toPx()
+
     LaunchedEffect(key1 = Unit) {
         launch {
             arrowAnimation.animateTo(_1f, tween(durationMillis = _1200, easing = FastOutLinearInEasing))
@@ -116,9 +119,11 @@ fun AddTaskArrowSection(
         val textOffset = Offset(x = canvasWidth / 1.8f, y = canvasHeight / 1.4f)
         drawArrowText(
             textMeasurer = textMeasurer,
-            textOffset = textOffset,
+            offset = textOffset,
             text = text,
-            textStyle = textStyle.copy(color = darkBlack.copy(alpha = textAlphaAnimation.value))
+            style = textStyle.copy(color = darkBlack.copy(alpha = textAlphaAnimation.value)),
+            xTranslation = textXTranslationInPx,
+            yTranslation = textYTranslationInPx
         )
     }
 }
@@ -176,16 +181,18 @@ private fun PathMeasure.getAnimatedPath(
 
 private fun DrawScope.drawArrowText(
     textMeasurer: TextMeasurer,
-    textOffset: Offset,
+    offset: Offset,
     text: String,
-    textStyle: TextStyle
+    style: TextStyle,
+    xTranslation: Float,
+    yTranslation: Float
 ) {
-    val textLayoutResult = textMeasurer.measure(text, textStyle)
-    rotate(262f, textOffset) {
-        translate(90f, -35f) {
+    val textLayoutResult = textMeasurer.measure(text, style)
+    rotate(263f, offset) {
+        translate(xTranslation, yTranslation) {
             drawText(
                 textLayoutResult = textLayoutResult,
-                topLeft = textOffset
+                topLeft = offset
             )
         }
     }

@@ -8,22 +8,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.presentation.util.Event
 import com.kotlity.core.presentation.util.ObserveAsEvents
+import com.kotlity.core.presentation.util.PreviewAnnotation
+import com.kotlity.core.presentation.util.ScreenDimensions
 import com.kotlity.core.presentation.util.onError
 import com.kotlity.core.presentation.util.onSuccess
 import com.kotlity.core.presentation.util.toString
@@ -44,6 +50,7 @@ import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.presentation.states.RemindersState
 import com.kotlity.feature_reminders.presentation.utils.handler
 import com.skydoves.cloudy.cloudy
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import org.koin.androidx.compose.koinViewModel
 
@@ -176,4 +183,54 @@ internal fun RemindersScreenSection(
             }
         }
     }
+}
+
+
+@PreviewAnnotation
+@Composable
+fun RemindersScreenPreview() {
+    val screenConfiguration = LocalConfiguration.current
+    val screenDimensions by remember(screenConfiguration) {
+        mutableStateOf(ScreenDimensions(width = screenConfiguration.screenWidthDp.dp, height = screenConfiguration.screenHeightDp.dp))
+    }
+
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    var remindersState by remember {
+        mutableStateOf(RemindersState())
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        remindersState = remindersState.copy(isLoading = true)
+        delay(1500)
+        remindersState = remindersState.copy(isLoading = false)
+    }
+
+//    CompositionLocalProvider(LocalScreenSize provides screenDimensions) {
+//        MyReminderTheme {
+//            Scaffold(
+//                snackbarHost = {
+//                    DefaultSnackbarHost(snackbarHostState = snackbarHostState)
+//                }
+//            ) { innerPadding ->
+//                RemindersScreenSection(
+//                    modifier = Modifier.padding(innerPadding),
+//                    remindersState = remindersState,
+//                    eventFlow = ,
+//                    onReminderAction = ,
+//                    onAddClick = { /*TODO*/ },
+//                    onShowSnackbar = { message, actionLabel ->
+//                        snackbarHostState.showSnackbar(
+//                            message = message,
+//                            actionLabel = actionLabel,
+//                            duration = SnackbarDuration.Short
+//                        ) == SnackbarResult.ActionPerformed
+//                    }
+//                )
+//            }
+//
+//        }
+//    }
 }

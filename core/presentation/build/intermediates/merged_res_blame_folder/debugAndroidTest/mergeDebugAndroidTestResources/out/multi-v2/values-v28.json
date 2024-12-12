@@ -4,7 +4,18 @@
             "outputFile": "com.kotlity.core.presentation.test.presentation-mergeDebugAndroidTestResources-61:/values-v28/values-v28.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\0a1098c597920366ab6be0a82909369d\\transformed\\core-1.6.1\\res\\values-v28\\values.xml",
+                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\1e1476a8625fc5d8c59642cfa7c23502\\transformed\\appcompat-1.6.1\\res\\values-v28\\values-v28.xml",
+                    "from": {
+                        "startLines": "2,3,4,8",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,130,217,397",
+                        "endLines": "2,3,7,11",
+                        "endColumns": "74,86,12,12",
+                        "endOffsets": "125,212,392,584"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\c02a688667053e333eacc1fbfb728823\\transformed\\core-1.6.1\\res\\values-v28\\values.xml",
                     "from": {
                         "startLines": "4,13",
                         "startColumns": "0,0",
@@ -20,17 +31,6 @@
                         "endLines": "20,29",
                         "endColumns": "8,8",
                         "endOffsets": "1067,1548"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\bogdan\\.gradle\\caches\\transforms-4\\079b866cb7537e6e4743ef86c0121a6d\\transformed\\appcompat-1.6.1\\res\\values-v28\\values-v28.xml",
-                    "from": {
-                        "startLines": "2,3,4,8",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,130,217,397",
-                        "endLines": "2,3,7,11",
-                        "endColumns": "74,86,12,12",
-                        "endOffsets": "125,212,392,584"
                     }
                 }
             ]

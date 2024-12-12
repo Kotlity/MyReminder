@@ -17,7 +17,6 @@ import com.kotlity.core.domain.util.Result
 import com.kotlity.feature_reminders.data.di.testDispatcherHandlerModule
 import com.kotlity.feature_reminders.domain.RemindersRepository
 import io.mockk.coEvery
-import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -37,10 +36,31 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
 
+private val mockReminderEntities = listOf(
+    ReminderEntity(
+        id = 0,
+        title = "test title1",
+        reminderTime = 234234234,
+        periodicity = Periodicity.ONCE
+    ),
+    ReminderEntity(
+        id = 1,
+        title = "test title2",
+        reminderTime = 234234256,
+        periodicity = Periodicity.DAILY
+    ),
+    ReminderEntity(
+        id = 2,
+        title = "test title3",
+        reminderTime = 234234289,
+        periodicity = Periodicity.WEEKDAYS
+    )
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class RemindersRepositoryTest: KoinTest {
 
-    @MockK
+    @MockK(relaxUnitFun = true)
     private lateinit var reminderDao: ReminderDao
 
     @MockK
@@ -48,27 +68,6 @@ class RemindersRepositoryTest: KoinTest {
 
     private val dispatcherHandler by inject<DispatcherHandler>()
     private lateinit var remindersRepository: RemindersRepository
-
-    private val mockReminderEntities = listOf(
-        ReminderEntity(
-            id = 0,
-            title = "test title1",
-            reminderTime = 234234234,
-            periodicity = Periodicity.ONCE
-        ),
-        ReminderEntity(
-            id = 1,
-            title = "test title2",
-            reminderTime = 234234256,
-            periodicity = Periodicity.DAILY
-        ),
-        ReminderEntity(
-            id = 2,
-            title = "test title3",
-            reminderTime = 234234289,
-            periodicity = Periodicity.WEEKDAYS
-        )
-    )
 
     @get:Rule
     val koinTestRule = KoinTestRule.create {
@@ -95,8 +94,8 @@ class RemindersRepositoryTest: KoinTest {
         every { reminderDao.getAllReminders() } returns flowOf(mockReminderEntities)
         remindersRepository.getAllReminders().test {
             val loadingState = awaitItem()
-            verify(exactly = 1) { reminderDao.getAllReminders() }
             assertThat(loadingState).isInstanceOf(Result.Loading::class.java)
+            verify(exactly = 1) { reminderDao.getAllReminders() }
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -107,9 +106,9 @@ class RemindersRepositoryTest: KoinTest {
         remindersRepository.getAllReminders().test {
             awaitItem()
             val result = awaitItem()
-            verify(exactly = 1) { reminderDao.getAllReminders() }
             assertThat(result).isInstanceOf(Result.Success::class.java)
             assertThat((result as Result.Success).data).isEmpty()
+            verify(exactly = 1) { reminderDao.getAllReminders() }
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -120,9 +119,9 @@ class RemindersRepositoryTest: KoinTest {
         remindersRepository.getAllReminders().test {
             awaitItem()
             val result = awaitItem()
-            verify(exactly = 1) { reminderDao.getAllReminders() }
             assertThat(result).isInstanceOf(Result.Success::class.java)
             assertThat((result as Result.Success).data).isEqualTo(mockReminderEntities.map { it.toReminder() })
+            verify(exactly = 1) { reminderDao.getAllReminders() }
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -134,9 +133,9 @@ class RemindersRepositoryTest: KoinTest {
             val loadingState = awaitItem()
             assertThat(loadingState).isInstanceOf(Result.Loading::class.java)
             val result = awaitItem()
-            verify(exactly = 1) { reminderDao.getAllReminders() }
             assertThat(result).isInstanceOf(Result.Error::class.java)
             assertThat((result as Result.Error).error).isEqualTo(DatabaseError.ILLEGAL_STATE)
+            verify(exactly = 1) { reminderDao.getAllReminders() }
             cancelAndConsumeRemainingEvents()
         }
     }
@@ -148,41 +147,57 @@ class RemindersRepositoryTest: KoinTest {
             val loadingState = awaitItem()
             assertThat(loadingState).isInstanceOf(Result.Loading::class.java)
             val result = awaitItem()
-            verify(exactly = 1) { reminderDao.getAllReminders() }
             assertThat(result).isInstanceOf(Result.Error::class.java)
             assertThat((result as Result.Error).error).isEqualTo(DatabaseError.SQLITE_CONSTRAINT)
+            verify(exactly = 1) { reminderDao.getAllReminders() }
             cancelAndConsumeRemainingEvents()
         }
     }
 
     @Test
-    fun `deleteReminder returns success`() = runTest {
-        coJustRun { reminderDao.deleteReminder(any()) }
+    fun `deleteReminder successfully delete reminder and returns it`() = runTest {
+        val mockReminderToDelete = mockReminderEntities[0]
+        coEvery { reminderDao.getReminderById(any()) } returns mockReminderToDelete
         every { scheduler.cancelReminder(any()) } returns Result.Success(Unit)
-        val result = remindersRepository.deleteReminder(0)
+        val result = remindersRepository.deleteReminder(mockReminderToDelete.id!!)
+        assertThat(result).isInstanceOf(Result.Success::class.java)
+        assertThat((result as Result.Success).data).isEqualTo(mockReminderToDelete.toReminder())
+        coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
         coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
         verify(exactly = 1) { scheduler.cancelReminder(any()) }
-        assertThat(result).isInstanceOf(Result.Success::class.java)
     }
 
     @Test
-    fun `deleteReminder throws SQLiteException`() = runTest {
+    fun `deleteReminder returns DatabaseError dot SQLITE_EXCEPTION`() = runTest {
+        coEvery { reminderDao.getReminderById(any()) } returns null
         coEvery { reminderDao.deleteReminder(any()) } throws SQLiteException()
         val result = remindersRepository.deleteReminder(0)
-        coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
         assertThat(result).isInstanceOf(Result.Error::class.java)
         assertThat((result as Result.Error).error).isEqualTo(ReminderError.Database(DatabaseError.SQLITE_EXCEPTION))
+        coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
+        coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
     }
 
     @Test
-    fun `deleteReminder throws SecurityException`() = runTest {
-        coJustRun { reminderDao.deleteReminder(any()) }
-        every { scheduler.cancelReminder(any()) } throws SecurityException()
+    fun `deleteReminder returns AlarmError dot SECURITY`() = runTest {
+        coEvery { reminderDao.getReminderById(any()) } returns null
+        every { scheduler.cancelReminder(any()) } returns Result.Error(AlarmError.SECURITY)
         val result = remindersRepository.deleteReminder(0)
-        coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
-        verify(exactly = 1) { scheduler.cancelReminder(any()) }
         assertThat(result).isInstanceOf(Result.Error::class.java)
         assertThat((result as Result.Error).error).isEqualTo(ReminderError.Alarm(AlarmError.SECURITY))
+        coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
+        coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
+        verify(exactly = 1) { scheduler.cancelReminder(any()) }
+    }
+
+    @Test
+    fun `restoreReminder successfully restored reminder`() = runTest {
+        coEvery { reminderDao.addReminder(any()) } returns Long.MAX_VALUE
+        every { scheduler.addOrUpdateReminder(any()) } returns Result.Success(data = Unit)
+        val result = remindersRepository.restoreReminder(mockReminderEntities.last().toReminder())
+        assertThat(result).isInstanceOf(Result.Success::class.java)
+        coVerify(exactly = 1) { reminderDao.addReminder(any()) }
+        verify(exactly = 1) { scheduler.addOrUpdateReminder(any()) }
     }
 
 }

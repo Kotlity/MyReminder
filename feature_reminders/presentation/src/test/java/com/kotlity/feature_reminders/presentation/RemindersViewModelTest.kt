@@ -31,6 +31,15 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+private val mockReminders = (0..5).map { index ->
+    Reminder(
+        id = index.toLong(),
+        title = "title$index",
+        reminderTime = 1734127200000 + index.toLong() * 1000,
+        periodicity = if (index % 2 == 0) Periodicity.WEEKDAYS else Periodicity.ONCE
+    )
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class RemindersViewModelTest {
 
@@ -67,21 +76,13 @@ class RemindersViewModelTest {
 
     @Test
     fun `onLoadReminders returns reminders and updates state with data`() = runTest {
-        val reminders = (0..5).map {
-            Reminder(
-                id = it.toLong(),
-                title = "title$it",
-                reminderTime = 1734127200000 + it.toLong() * 1000,
-                periodicity = if (it % 2 == 0) Periodicity.WEEKDAYS else Periodicity.ONCE
-            )
-        }
-        every { remindersRepository.getAllReminders() } returns flowOf(Result.Success(reminders))
+        every { remindersRepository.getAllReminders() } returns flowOf(Result.Success(data = mockReminders))
         val initialState = remindersViewModel.state.value
         assertThat(initialState.reminders).isEmpty()
         remindersViewModel.state.test {
             val updatedState = awaitItem()
             assertThat(updatedState.isLoading).isFalse()
-            assertThat(updatedState.reminders).isEqualTo(reminders.map { it.toReminderUi() })
+            assertThat(updatedState.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
         }
         verify(exactly = 1) { remindersRepository.getAllReminders() }
     }
@@ -107,7 +108,7 @@ class RemindersViewModelTest {
 
     @Test
     fun `onReminderDelete returns successful result and send ReminderOneTimeEvent dot Delete to the eventChannel`() = runTest {
-        coEvery { remindersRepository.deleteReminder(any()) } returns Result.Success(Unit)
+        coEvery { remindersRepository.deleteReminder(any()) } returns Result.Success(null)
         remindersViewModel.onAction(RemindersAction.OnReminderDelete(10))
         remindersViewModel.eventFlow.test {
             val event = awaitItem()
@@ -149,17 +150,6 @@ class RemindersViewModelTest {
     }
 
     @Test
-    fun `onReminderAdd sends ReminderOneTimeEvent dot Add to the eventChannel`() = runTest {
-        remindersViewModel.onAction(RemindersAction.OnReminderAdd)
-        remindersViewModel.eventFlow.test {
-            val event = awaitItem()
-            assertThat(event).isInstanceOf(Event.Success::class.java)
-            val reminderOneTimeEvent = (event as Event.Success).data
-            assertThat(reminderOneTimeEvent).isInstanceOf(ReminderOneTimeEvent.Add::class.java)
-        }
-    }
-
-    @Test
     fun `onReminderEdit sends ReminderOneTimeEvent dot Edit with reminderId to the eventChannel`() = runTest {
         remindersViewModel.onAction(RemindersAction.OnReminderEdit(3))
         remindersViewModel.eventFlow.test {
@@ -178,9 +168,9 @@ class RemindersViewModelTest {
         remindersViewModel.state.test {
             val initialSelectedReminderState = awaitItem().selectedReminderState
             assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
-            remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 1, xPosition = 80, yPosition = 125))
+            remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 1, position = Pair(80, 125)))
             val updatedSelectedReminderState = awaitItem().selectedReminderState
-            val expectedSelectedReminderState = SelectedReminderState(id = 1, xPosition = 80, yPosition = 125)
+            val expectedSelectedReminderState = SelectedReminderState(id = 1, position = Pair(80, 125))
             assertThat(updatedSelectedReminderState).isEqualTo(expectedSelectedReminderState)
         }
     }
@@ -193,9 +183,9 @@ class RemindersViewModelTest {
         }
         val initialSelectedReminderState = remindersViewModel.state.value.selectedReminderState
         assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
-        remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 2, xPosition = 80, yPosition = 270))
+        remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 2, position = Pair(80, 270)))
         val updatedSelectedReminderState = remindersViewModel.state.value.selectedReminderState
-        val expectedUpdatedSelectedReminderState = SelectedReminderState(id = 2, xPosition = 80, yPosition = 270)
+        val expectedUpdatedSelectedReminderState = SelectedReminderState(id = 2, position = Pair(80, 270))
         assertThat(updatedSelectedReminderState).isEqualTo(expectedUpdatedSelectedReminderState)
         remindersViewModel.onAction(RemindersAction.OnReminderUnselect)
         val nullableSelectedReminderState = remindersViewModel.state.value.selectedReminderState
