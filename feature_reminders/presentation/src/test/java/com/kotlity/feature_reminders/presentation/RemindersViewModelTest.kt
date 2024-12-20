@@ -1,6 +1,5 @@
 package com.kotlity.feature_reminders.presentation
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.kotlity.core.domain.Periodicity
@@ -10,26 +9,24 @@ import com.kotlity.core.domain.util.DatabaseError
 import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.domain.util.Result
 import com.kotlity.core.presentation.util.Event
-import com.kotlity.feature_reminders.domain.RemindersRepository
 import com.kotlity.feature_reminders.presentation.actions.RemindersAction
+import com.kotlity.feature_reminders.presentation.di.testRemindersRepositoryModule
 import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.presentation.mappers.toReminderUi
 import com.kotlity.feature_reminders.presentation.states.SelectedReminderState
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.impl.annotations.MockK
-import io.mockk.junit4.MockKRule
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.inject
 
 private val mockReminders = (0..5).map { index ->
     Reminder(
@@ -40,185 +37,258 @@ private val mockReminders = (0..5).map { index ->
     )
 }
 
+private val mockReminderToDelete = mockReminders[1]
+
+private val mockSelectedReminderState = SelectedReminderState(id = 1, position = Pair(first = 128, 356))
+
 @OptIn(ExperimentalCoroutinesApi::class)
-class RemindersViewModelTest {
+class RemindersViewModelTest: KoinTest {
 
-    @MockK
-    private lateinit var remindersRepository: RemindersRepository
-
+    private val testRemindersRepository by inject<TestRemindersRepository>()
     private lateinit var remindersViewModel: RemindersViewModel
 
-    @get:Rule
-    val mockKRule = MockKRule(this)
+    @get:Rule(order = 0)
+    val koinTestRule = KoinTestRule.create {
+        printLogger()
+        modules(testRemindersRepositoryModule)
+    }
 
-    @get:Rule
+    @get:Rule(order = 1)
     val mainDispatcherRule = MainDispatcherRule()
-
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Before
     fun setup() {
-        remindersViewModel = RemindersViewModel(remindersRepository)
+        remindersViewModel = RemindersViewModel(testRemindersRepository)
     }
 
     @Test
-    fun `on initial call onLoadReminders set state to loading equals true`() = runTest {
-        every { remindersRepository.getAllReminders() } returns flowOf(Result.Loading)
-        val initialState = remindersViewModel.state.value
-        assertThat(initialState.isLoading).isFalse()
+    fun `on initial call onLoadReminders set state to loading`() = runTest {
+        assertThat(remindersViewModel.state.value.isLoading).isFalse()
+
         remindersViewModel.state.test {
-            val isLoading = awaitItem().isLoading
-            assertThat(isLoading).isTrue()
+            val initialValue = awaitItem()
+            assertThat(initialValue.isLoading).isTrue()
+            cancelAndConsumeRemainingEvents()
         }
-        verify(exactly = 1) { remindersRepository.getAllReminders() }
     }
 
     @Test
-    fun `onLoadReminders returns reminders and updates state with data`() = runTest {
-        every { remindersRepository.getAllReminders() } returns flowOf(Result.Success(data = mockReminders))
-        val initialState = remindersViewModel.state.value
-        assertThat(initialState.reminders).isEmpty()
-        remindersViewModel.state.test {
-            val updatedState = awaitItem()
-            assertThat(updatedState.isLoading).isFalse()
-            assertThat(updatedState.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
-        }
-        verify(exactly = 1) { remindersRepository.getAllReminders() }
+    fun `onLoadReminders returns reminders`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+
+        val remindersState = remindersViewModel.state.value
+        assertThat(remindersState.isLoading).isFalse()
+        assertThat(remindersState.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
     }
 
     @Test
     fun `onLoadReminders returns DatabaseError dot SQLiteException and send it to the eventChannel`() = runTest {
-        coEvery { remindersRepository.getAllReminders() } returns flowOf(Result.Error(DatabaseError.SQLITE_EXCEPTION))
-        remindersViewModel.state.test {
-            val updatedState = awaitItem()
-            assertThat(updatedState.isLoading).isFalse()
-            assertThat(updatedState.reminders).isEmpty()
-        }
-        remindersViewModel.eventFlow.test {
-            val event = awaitItem()
-            assertThat(event).isInstanceOf(Event.Error::class.java)
-            val reminderError = (event as Event.Error<ReminderError>).error
-            assertThat(reminderError).isInstanceOf(ReminderError.Database::class.java)
-            val databaseError = (reminderError as ReminderError.Database).error
-            assertThat(databaseError).isEqualTo(DatabaseError.SQLITE_EXCEPTION)
-        }
-        verify(exactly = 1) { remindersRepository.getAllReminders() }
+        val mockError = ReminderError.Database(DatabaseError.SQLITE_EXCEPTION)
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminderError(error = mockError)
+        testRemindersRepository.updateObservableReminders(result = Result.Error(mockError.error))
+
+        assertThat(remindersViewModel.state.value.isLoading).isFalse()
+
+        val sentError = remindersViewModel.eventFlow.first()
+        assertThat(sentError).isInstanceOf(Event.Error::class.java)
+        assertThat((sentError as Event.Error).error).isEqualTo(mockError)
     }
 
     @Test
     fun `onReminderDelete returns successful result and send ReminderOneTimeEvent dot Delete to the eventChannel`() = runTest {
-        coEvery { remindersRepository.deleteReminder(any()) } returns Result.Success(null)
-        remindersViewModel.onAction(RemindersAction.OnReminderDelete(10))
-        remindersViewModel.eventFlow.test {
-            val event = awaitItem()
-            assertThat(event).isInstanceOf(Event.Success::class.java)
-            val reminderOneTimeEvent = (event as Event.Success).data
-            assertThat(reminderOneTimeEvent).isInstanceOf(ReminderOneTimeEvent.Delete::class.java)
-        }
-        coVerify(exactly = 1) { remindersRepository.deleteReminder(any()) }
+        val updatedMockReminders = mockReminders.toMutableList().apply { removeIf { it == mockReminderToDelete } }
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+
+        remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = mockReminderToDelete.id))
+
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(updatedMockReminders.map { it.toReminderUi() })
+
+        val channelResult = remindersViewModel.eventFlow.first()
+        assertThat(channelResult).isInstanceOf(Event.Success::class.java)
+        assertThat((channelResult as Event.Success).data).isInstanceOf(ReminderOneTimeEvent.Delete::class.java)
     }
 
     @Test
     fun `onReminderDelete returns DatabaseError dot IllegalArgument and send it to the eventChannel`() = runTest {
-        coEvery { remindersRepository.deleteReminder(any()) } returns Result.Error(ReminderError.Database(DatabaseError.ILLEGAL_ARGUMENT))
-        remindersViewModel.onAction(RemindersAction.OnReminderDelete(1000))
-        remindersViewModel.eventFlow.test {
-            val event = awaitItem()
-            assertThat(event).isInstanceOf(Event.Error::class.java)
-            val reminderErrorEvent = (event as Event.Error).error
-            assertThat(reminderErrorEvent).isInstanceOf(ReminderError.Database::class.java)
-            val databaseError = (reminderErrorEvent as ReminderError.Database).error
-            assertThat(databaseError).isEqualTo(DatabaseError.ILLEGAL_ARGUMENT)
-        }
-        coVerify(exactly = 1) { remindersRepository.deleteReminder(any()) }
+        val mockError = ReminderError.Database(error = DatabaseError.ILLEGAL_ARGUMENT)
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+        testRemindersRepository.setReminderError(mockError)
+
+        remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = mockReminderToDelete.id))
+
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
+
+        val channelResult = remindersViewModel.eventFlow.first()
+        assertThat(channelResult).isInstanceOf(Event.Error::class.java)
+        assertThat((channelResult as Event.Error).error).isEqualTo(mockError)
     }
 
     @Test
     fun `onReminderDelete returns AlarmError dot Security and send it to the eventChannel`() = runTest {
-        coEvery { remindersRepository.deleteReminder(any()) } returns Result.Error(ReminderError.Alarm(AlarmError.SECURITY))
-        remindersViewModel.onAction(RemindersAction.OnReminderDelete(5))
-        remindersViewModel.eventFlow.test {
-            val event = awaitItem()
-            assertThat(event).isInstanceOf(Event.Error::class.java)
-            val reminderErrorEvent = (event as Event.Error).error
-            assertThat(reminderErrorEvent).isInstanceOf(ReminderError.Alarm::class.java)
-            val alarmError = (reminderErrorEvent as ReminderError.Alarm).error
-            assertThat(alarmError).isEqualTo(AlarmError.SECURITY)
+        val mockError = ReminderError.Alarm(error = AlarmError.SECURITY)
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+        testRemindersRepository.setReminderError(mockError)
+
+        remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = mockReminderToDelete.id))
+
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
+
+        val channelResult = remindersViewModel.eventFlow.first()
+        assertThat(channelResult).isInstanceOf(Event.Error::class.java)
+        assertThat((channelResult as Event.Error).error).isEqualTo(mockError)
+    }
+
+    @Test
+    fun `successfully deletion of several reminders`() = runTest {
+        val mockRemindersToDelete = mockReminders.filter { it.id.toInt() == 1 || it.id.toInt() == 2 || it.id.toInt() == 4 }
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(mockReminders)
+
+        mockRemindersToDelete.forEach { reminder ->
+            remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = reminder.id))
         }
-        coVerify(exactly = 1) { remindersRepository.deleteReminder(any()) }
+        assertThat(remindersViewModel.state.value.reminders).containsNoneIn(mockRemindersToDelete)
+    }
+
+    @Test
+    fun `successfully restoration of the recently deleted reminder`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
+
+        launch {
+            remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = mockReminderToDelete.id))
+            assertThat(remindersViewModel.state.value.reminders).doesNotContain(mockReminderToDelete.toReminderUi())
+            remindersViewModel.onAction(RemindersAction.OnReminderRestore)
+        }
+        assertThat(remindersViewModel.state.value.reminders).contains(mockReminderToDelete.toReminderUi())
+
+        assertThat((remindersViewModel.eventFlow.first() as Event.Success).data).isInstanceOf(ReminderOneTimeEvent.Delete::class.java)
+    }
+
+    @Test
+    fun `onReminderRestore returns DatabaseError dot Unknown and send it to the eventChannel`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        val mockReminderError = ReminderError.Database(error = DatabaseError.UNKNOWN)
+
+        testRemindersRepository.setReminders(reminders = mockReminders)
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
+
+        launch {
+            remindersViewModel.onAction(RemindersAction.OnReminderDelete(id = mockReminderToDelete.id))
+            assertThat(remindersViewModel.state.value.reminders).doesNotContain(mockReminderToDelete.toReminderUi())
+            testRemindersRepository.setReminderError(error = mockReminderError)
+            remindersViewModel.onAction(RemindersAction.OnReminderRestore)
+        }
+        advanceUntilIdle()
+        assertThat(remindersViewModel.state.value.reminders).doesNotContain(mockReminderToDelete.toReminderUi())
+
+        val eventReminderDelete = (remindersViewModel.eventFlow.first() as Event.Success).data
+        val eventReminderRestore = ((remindersViewModel.eventFlow.first() as Event.Error).error as ReminderError.Database).error
+
+        assertThat(eventReminderDelete).isInstanceOf(ReminderOneTimeEvent.Delete::class.java)
+        assertThat(eventReminderRestore).isEqualTo(mockReminderError.error)
     }
 
     @Test
     fun `onReminderEdit sends ReminderOneTimeEvent dot Edit with reminderId to the eventChannel`() = runTest {
         remindersViewModel.onAction(RemindersAction.OnReminderEdit(3))
+
         remindersViewModel.eventFlow.test {
             val event = awaitItem()
             assertThat(event).isInstanceOf(Event.Success::class.java)
+
             val reminderOneTimeEvent = (event as Event.Success).data
             assertThat(reminderOneTimeEvent).isInstanceOf(ReminderOneTimeEvent.Edit::class.java)
+
             val reminderIdToEdit = (reminderOneTimeEvent as ReminderOneTimeEvent.Edit).id
             assertThat(reminderIdToEdit).isEqualTo(3)
         }
     }
 
     @Test
-    fun `onReminderSelected updates selectedReminderId and x and y coordinates with passed id and coordinates`() = runTest {
-        every { remindersRepository.getAllReminders() } returns emptyFlow()
+    fun `onReminderSelect updates selectedReminderId and x and y coordinates with passed id and coordinates`() = runTest {
         remindersViewModel.state.test {
-            val initialSelectedReminderState = awaitItem().selectedReminderState
-            assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
-            remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 1, position = Pair(80, 125)))
-            val updatedSelectedReminderState = awaitItem().selectedReminderState
-            val expectedSelectedReminderState = SelectedReminderState(id = 1, position = Pair(80, 125))
-            assertThat(updatedSelectedReminderState).isEqualTo(expectedSelectedReminderState)
+            assertThat(awaitItem().selectedReminderState).isEqualTo(SelectedReminderState())
+            remindersViewModel.onAction(RemindersAction.OnReminderSelect(position = mockSelectedReminderState.position!!, id = mockSelectedReminderState.id!!))
+            assertThat(awaitItem().selectedReminderState).isEqualTo(mockSelectedReminderState)
         }
     }
 
     @Test
-    fun `onReminderUnselected sets selectedReminderId and x and y coordinates to null`() = runTest {
-        every { remindersRepository.getAllReminders() } returns emptyFlow()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            remindersViewModel.state.collect { }
-        }
-        val initialSelectedReminderState = remindersViewModel.state.value.selectedReminderState
-        assertThat(initialSelectedReminderState).isEqualTo(SelectedReminderState())
-        remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = 2, position = Pair(80, 270)))
-        val updatedSelectedReminderState = remindersViewModel.state.value.selectedReminderState
-        val expectedUpdatedSelectedReminderState = SelectedReminderState(id = 2, position = Pair(80, 270))
-        assertThat(updatedSelectedReminderState).isEqualTo(expectedUpdatedSelectedReminderState)
+    fun `onReminderUnselect sets selectedReminderId and x and y coordinates to null`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        assertThat(remindersViewModel.state.value.selectedReminderState).isEqualTo(SelectedReminderState())
+
+        remindersViewModel.onAction(RemindersAction.OnReminderSelect(id = mockSelectedReminderState.id!!, position = mockSelectedReminderState.position!!))
+
+        assertThat(remindersViewModel.state.value.selectedReminderState).isEqualTo(mockSelectedReminderState)
+
         remindersViewModel.onAction(RemindersAction.OnReminderUnselect)
-        val nullableSelectedReminderState = remindersViewModel.state.value.selectedReminderState
-        assertThat(nullableSelectedReminderState).isEqualTo(initialSelectedReminderState)
+
+        assertThat(remindersViewModel.state.value.selectedReminderState).isEqualTo(SelectedReminderState())
+    }
+
+    @Test
+    fun `onReminderSelect updates selectedReminderState after that onReminderEdit sends ReminderOneTimeEvent dot Edit with passed id and sets selectedReminderState to the initial value`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+
+        val initialState = remindersViewModel.state.value
+        assertThat(initialState.reminders).isEmpty()
+        assertThat(initialState.selectedReminderState).isEqualTo(SelectedReminderState())
+
+        testRemindersRepository.setReminders(mockReminders)
+        assertThat(remindersViewModel.state.value.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
+
+        remindersViewModel.onAction(RemindersAction.OnReminderSelect(position = mockSelectedReminderState.position!!, id = mockSelectedReminderState.id!!))
+        val selectedReminderState = remindersViewModel.state.value.selectedReminderState
+        assertThat(selectedReminderState).isEqualTo(mockSelectedReminderState)
+
+        remindersViewModel.onAction(RemindersAction.OnReminderEdit(id = selectedReminderState.id!!))
+        val eventReminderEdit = (remindersViewModel.eventFlow.first() as Event.Success).data
+        assertThat(eventReminderEdit).isInstanceOf(ReminderOneTimeEvent.Edit::class.java)
+        assertThat((eventReminderEdit as ReminderOneTimeEvent.Edit).id).isEqualTo(selectedReminderState.id)
+
+        assertThat(remindersViewModel.state.value.selectedReminderState).isEqualTo(SelectedReminderState())
     }
 
     @Test
     fun `onIsAlertDialogRationaleVisibleUpdate sets isAlertDialogRationaleVisible to true`() = runTest {
-        every { remindersRepository.getAllReminders() } returns emptyFlow()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            remindersViewModel.state.collect { }
+        remindersViewModel.state.test {
+            assertThat(awaitItem().isAlertDialogRationaleVisible).isFalse()
+            remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
+            assertThat(awaitItem().isAlertDialogRationaleVisible).isTrue()
         }
-        val initialIsAlertDialogRationaleVisible = remindersViewModel.state.value.isAlertDialogRationaleVisible
-        assertThat(initialIsAlertDialogRationaleVisible).isFalse()
-        remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
-        val updatedIsAlertDialogRationaleVisible = remindersViewModel.state.value.isAlertDialogRationaleVisible
-        assertThat(updatedIsAlertDialogRationaleVisible).isTrue()
     }
 
     @Test
     fun `onIsAlertDialogRationaleVisibleUpdate sets isAlertDialogRationaleVisible to false`() = runTest {
-        every { remindersRepository.getAllReminders() } returns emptyFlow()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            remindersViewModel.state.collect { }
+        remindersViewModel.state.test {
+            assertThat(awaitItem().isAlertDialogRationaleVisible).isFalse()
+            remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
+            assertThat(awaitItem().isAlertDialogRationaleVisible).isTrue()
+            remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
+            assertThat(awaitItem().isAlertDialogRationaleVisible).isFalse()
         }
-        val initialIsAlertDialogRationaleVisible = remindersViewModel.state.value.isAlertDialogRationaleVisible
-        assertThat(initialIsAlertDialogRationaleVisible).isFalse()
-        remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
-        val updatedIsAlertDialogRationaleVisible = remindersViewModel.state.value.isAlertDialogRationaleVisible
-        assertThat(updatedIsAlertDialogRationaleVisible).isTrue()
-        remindersViewModel.onAction(RemindersAction.OnIsAlertDialogRationaleVisibleUpdate)
-        val alertDialogRationaleIsVisible = remindersViewModel.state.value.isAlertDialogRationaleVisible
-        assertThat(alertDialogRationaleIsVisible).isFalse()
     }
 
 }

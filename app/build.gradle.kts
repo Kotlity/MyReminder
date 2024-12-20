@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.kotlity.myreminder"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.kotlity.myreminder"

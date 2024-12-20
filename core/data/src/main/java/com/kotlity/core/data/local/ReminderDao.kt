@@ -22,6 +22,6 @@ interface ReminderDao {
     @Query("SELECT * FROM ReminderEntity WHERE id = :id")
     suspend fun getReminderById(id: Long): ReminderEntity?
 
-    @Query("SELECT * FROM ReminderEntity")
+    @Query("SELECT * FROM ReminderEntity ORDER BY id")
     fun getAllReminders(): Flow<List<ReminderEntity>>
 }
