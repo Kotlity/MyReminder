@@ -34,7 +34,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .size(dimensionResource(id = dimen._40dp))
                 .offset(
                     x = dimensionResource(id = dimen._30dp),
-                    y = screenSize.height / 6
+                    y = dimensionResource(id = dimen._60dp)
                 ),
             color = MaterialTheme.colorScheme.primary
         )
@@ -43,7 +43,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .size(dimensionResource(id = dimen._60dp))
                 .offset(
                     x = dimensionResource(id = dimen.minus30dp),
-                    y = screenSize.height / 4
+                    y = screenSize.height / 6.5f
                 ),
             color = MaterialTheme.colorScheme.tertiary
         )
@@ -52,7 +52,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .size(dimensionResource(id = dimen._80dp))
                 .offset(
                     x = screenSize.width - dimensionResource(id = dimen._17dp),
-                    y = screenSize.height / 1.9f
+                    y = screenSize.height / 1.8f
                 ),
             color = MaterialTheme.colorScheme.tertiary
         )
@@ -61,7 +61,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .size(dimensionResource(id = dimen._60dp))
                 .offset(
                     x = screenSize.width / 1.35f,
-                    y = screenSize.height / 1.6f
+                    y = screenSize.height / 1.5f
                 ),
             color = MaterialTheme.colorScheme.primary
         )

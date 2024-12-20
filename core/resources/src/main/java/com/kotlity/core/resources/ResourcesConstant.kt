@@ -19,7 +19,7 @@ object ResourcesConstant {
     val _20dp = 20.dp
     val _30dp = 30.dp
 
-    const val _0_28 = 0.28f
+    const val _0_3 = 0.3f
     const val _0_5 = 0.5f
     const val _0_71 = 0.71f
     const val _1f = 1f

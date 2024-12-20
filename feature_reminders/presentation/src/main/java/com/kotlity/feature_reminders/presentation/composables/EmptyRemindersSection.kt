@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +25,7 @@ import com.kotlity.core.presentation.util.PreviewAnnotation
 import com.kotlity.core.resources.R
 import com.kotlity.core.resources.R.drawable.main_reminder_logo
 import com.kotlity.core.resources.R.string.addYourTaskFirst
-import com.kotlity.core.resources.ResourcesConstant._0_28
+import com.kotlity.core.resources.ResourcesConstant._0_3
 import com.kotlity.core.resources.ResourcesConstant._0_71
 
 @Composable
@@ -42,13 +43,15 @@ fun EmptyRemindersSection(
         contentAlignment = contentAlignment
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(_0_71),
+            modifier = Modifier
+                .fillMaxWidth(_0_71)
+                .offset(y = dimensionResource(id = R.dimen.minus30dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(_0_28),
+                    .fillMaxHeight(_0_3),
                 painter = painterResource(id = logoRes),
                 contentDescription = emptyRemindersLogoDescription
             )

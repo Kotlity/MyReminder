@@ -21,8 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -57,15 +55,11 @@ fun TopSection(
                     .align(Alignment.CenterEnd)
                     .offset(y = dimensionResource(id = R.dimen._3dp))
                     .padding(end = dimensionResource(id = R.dimen._10dp))
-                    .onGloballyPositioned { layoutCoordinates ->
-                        val position = layoutCoordinates.positionInRoot()
-                        val size = layoutCoordinates.size
-                        val x = position.x.toInt()
-                        val y = position.y.toInt() + size.height
-                        onAddTaskPositioned(IntOffset(x, y))
-                    }
                 ,
                 isAddTaskLabelVisible = isAddTaskLabelVisible,
+                onIconPositioned = {
+                    onAddTaskPositioned(it)
+                },
                 onAddTaskClick = onAddTaskClick
             )
         }
