@@ -67,7 +67,7 @@
     <string name="expandIconDescription">Expand icon description</string>
     <string name="remindersContentSectionLabel">Reminders content section label</string>
     <string name="loadingIndicatorLabel">Loading indicator label</string>
-    <string name="loadingIndicatorRotationLabel">Loading wheel rotation label</string>
     <string name="loadingIndicatorColorLabel">Loading wheel color label</string>
+    <string name="loadingIndicatorHeightLabel">Loading wheel height label</string>
 
 </resources>

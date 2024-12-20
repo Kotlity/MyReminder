@@ -3,24 +3,24 @@
 3    package="com.kotlity.core.presentation.test" >
 4
 5    <uses-sdk
-5-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:5:5-74
+5-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:5:5-74
 6        android:minSdkVersion="24"
-6-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:5:15-41
+6-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:5:15-41
 7        android:targetSdkVersion="24" />
-7-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:5:42-71
+7-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:5:42-71
 8
 9    <instrumentation
-9-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:11:5-15:84
+9-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:11:5-15:84
 10        android:name="androidx.test.runner.AndroidJUnitRunner"
-10-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:11:22-76
+10-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:11:22-76
 11        android:functionalTest="false"
-11-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:14:22-52
+11-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:14:22-52
 12        android:handleProfiling="false"
-12-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:13:22-53
+12-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:13:22-53
 13        android:label="Tests for com.kotlity.core.presentation.test"
-13-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:15:22-82
+13-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:15:22-82
 14        android:targetPackage="com.kotlity.core.presentation.test" />
-14-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:12:22-80
+14-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:12:22-80
 15
 16    <uses-permission android:name="android.permission.WAKE_LOCK" />
 16-->[androidx.work:work-runtime:2.8.1] C:\Users\bogdan\.gradle\caches\transforms-4\a1624580e9398b2cf7c71551a65b6e1e\transformed\work-runtime-2.8.1\AndroidManifest.xml:23:5-68
@@ -63,14 +63,14 @@
 32    </queries>
 33
 34    <application
-34-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:7:5-9:19
+34-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:7:5-9:19
 35        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 35-->[androidx.core:core:1.15.0] C:\Users\bogdan\.gradle\caches\transforms-4\71df0517e33700c82587c34a5d221392\transformed\core-1.15.0\AndroidManifest.xml:28:18-86
 36        android:debuggable="true"
 37        android:extractNativeLibs="false" >
 38        <uses-library android:name="android.test.runner" />
-38-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:8:9-60
-38-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest9094419027033087795.xml:8:23-57
+38-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:8:9-60
+38-->C:\Users\bogdan\AndroidStudioProjects\MyReminder\core\presentation\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest843648074702017945.xml:8:23-57
 39
 40        <provider
 40-->[androidx.work:work-runtime:2.8.1] C:\Users\bogdan\.gradle\caches\transforms-4\a1624580e9398b2cf7c71551a65b6e1e\transformed\work-runtime-2.8.1\AndroidManifest.xml:29:9-37:20

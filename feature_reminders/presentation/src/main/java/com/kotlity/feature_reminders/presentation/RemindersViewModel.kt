@@ -17,6 +17,7 @@ import com.kotlity.feature_reminders.presentation.actions.RemindersAction
 import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.presentation.mappers.toReminderUi
 import com.kotlity.feature_reminders.presentation.states.RemindersState
+import com.kotlity.feature_reminders.presentation.states.SelectedReminderState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -131,12 +132,7 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
 
     private fun onReminderUnselect() {
         _state.update {
-            it.copy(
-                selectedReminderState = it.selectedReminderState.copy(
-                    id = null,
-                    position = null
-                )
-            )
+            it.copy(selectedReminderState = SelectedReminderState())
         }
     }
 

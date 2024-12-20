@@ -6,5 +6,5 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val notificationServiceModule = module {
-    single<NotificationService> { DefaultNotificationService(get(), androidContext()) }
+    factory<NotificationService> { DefaultNotificationService(get(), androidContext()) }
 }

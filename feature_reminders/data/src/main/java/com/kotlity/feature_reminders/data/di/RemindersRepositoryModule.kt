@@ -5,5 +5,5 @@ import com.kotlity.feature_reminders.domain.RemindersRepository
 import org.koin.dsl.module
 
 val remindersRepositoryModule = module {
-    single<RemindersRepository> { RemindersRepositoryImplementation(get(), get(), get()) }
+    factory<RemindersRepository> { RemindersRepositoryImplementation(get(), get(), get()) }
 }

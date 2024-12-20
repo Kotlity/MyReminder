@@ -34,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -62,6 +64,7 @@ fun AddTaskSection(
     backgroundColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
     @DrawableRes addIconRes: Int = R.drawable.add_main_task,
     addIconDescription: String? = stringResource(id = R.string.addTaskIconDescription),
+    onIconPositioned: (IntOffset) -> Unit,
     onAddTaskClick: () -> Unit
 ) {
 
@@ -83,6 +86,13 @@ fun AddTaskSection(
                 .zIndex(_1f)
                 .offset {
                     IntOffset(addIconOffsetInPx, 0)
+                }
+                .onGloballyPositioned { layoutCoordinates ->
+                    val position = layoutCoordinates.positionInRoot()
+                    val size = layoutCoordinates.size
+                    val xPosition = position.x.toInt() - size.width / 2f
+                    val yPosition = position.y.toInt() + size.height * 1.2f
+                    onIconPositioned(IntOffset(x = xPosition.toInt(), y = yPosition.toInt()))
                 }
                 .clickable(onClick = onAddTaskClick),
             painter = painterResource(id = addIconRes),
@@ -140,6 +150,7 @@ private fun AddTaskSectionPreview() {
         ) {
             AddTaskSection(
                 isAddTaskLabelVisible = isShowAddTaskLabel,
+                onIconPositioned = {},
                 onAddTaskClick = { isShowAddTaskLabel = !isShowAddTaskLabel }
             )
 
