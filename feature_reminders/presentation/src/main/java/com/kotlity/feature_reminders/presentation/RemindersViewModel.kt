@@ -52,7 +52,6 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
             is RemindersAction.OnReminderEdit -> onReminderEdit(remindersAction.id)
             is RemindersAction.OnReminderDelete -> onReminderDelete(remindersAction.id)
             RemindersAction.OnReminderRestore -> onReminderRestore()
-            RemindersAction.OnIsAlertDialogRationaleVisibleUpdate -> onIsAlertDialogRationaleVisibleUpdate()
             RemindersAction.OnReminderUnselect -> onReminderUnselect()
             RemindersAction.OnLoadReminders -> onLoadReminders()
         }
@@ -121,12 +120,6 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
                     .onError { sendErrorToChannel(it) }
             }
             recentlyRemovedReminder = null
-        }
-    }
-
-    private fun onIsAlertDialogRationaleVisibleUpdate() {
-        _state.update {
-            it.copy(isAlertDialogRationaleVisible = !_state.value.isAlertDialogRationaleVisible)
         }
     }
 
