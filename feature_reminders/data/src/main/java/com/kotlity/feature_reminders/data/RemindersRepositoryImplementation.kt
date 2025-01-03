@@ -31,6 +31,8 @@ class RemindersRepositoryImplementation(
     }
 
     override suspend fun deleteReminder(id: Long): Result<Reminder?, ReminderError> {
+        val alarmResult = alarmScheduler.cancelReminder(id)
+        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         var deletedReminder: Reminder? = null
         val databaseResult = databaseCall(dispatcherHandler.io) {
             deletedReminder = reminderDao.getReminderById(id)?.toReminder()
@@ -38,19 +40,17 @@ class RemindersRepositoryImplementation(
             Result.Success(Unit)
         }
         if (databaseResult is Result.Error) return Result.Error(ReminderError.Database(databaseResult.error))
-        val alarmResult = alarmScheduler.cancelReminder(id)
-        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         return Result.Success(deletedReminder)
     }
 
     override suspend fun restoreReminder(reminder: Reminder): Result<Unit, ReminderError> {
+        val alarmResult = alarmScheduler.addOrUpdateReminder(reminder)
+        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         val databaseResult = databaseCall(dispatcherHandler.io) {
             reminderDao.addReminder(reminder.toReminderEntity())
             Result.Success(Unit)
         }
         if (databaseResult is Result.Error) return Result.Error(ReminderError.Database(databaseResult.error))
-        val alarmResult = alarmScheduler.addOrUpdateReminder(reminder)
-        if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         return Result.Success(Unit)
     }
 }

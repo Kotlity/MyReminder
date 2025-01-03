@@ -40,6 +40,7 @@ class AlarmScheduler(
 
     override fun cancelReminder(id: Long): Result<Unit, AlarmError> {
         return reminderCall {
+            if (!canScheduleExactAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
             val pendingIntent = Intent(context, AlarmReceiver::class.java).let {
                 PendingIntent.getBroadcast(context, id.hashCode(), it, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
             }
