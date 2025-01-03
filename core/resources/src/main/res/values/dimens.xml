@@ -34,6 +34,6 @@
     <dimen name="minus20dp">-20dp</dimen>
     <dimen name="minus25dp">-25dp</dimen>
     <dimen name="minus30dp">-30dp</dimen>
-    <dimen name="minus50dp">-50dp</dimen>
+    <dimen name="minus35dp">-35dp</dimen>
 
 </resources>
