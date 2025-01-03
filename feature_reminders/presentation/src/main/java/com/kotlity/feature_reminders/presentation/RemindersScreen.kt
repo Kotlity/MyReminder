@@ -1,5 +1,6 @@
 package com.kotlity.feature_reminders.presentation
 
+import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kotlity.core.domain.Periodicity
 import com.kotlity.core.domain.Reminder
+import com.kotlity.core.domain.util.AlarmError
 import com.kotlity.core.domain.util.ReminderError
 import com.kotlity.core.presentation.ui.theme.MyReminderTheme
 import com.kotlity.core.presentation.util.Event
@@ -59,7 +61,9 @@ import com.kotlity.feature_reminders.presentation.composables.TopSection
 import com.kotlity.feature_reminders.presentation.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.presentation.mappers.toReminderUi
 import com.kotlity.feature_reminders.presentation.states.RemindersState
+import com.kotlity.core.presentation.util.getActivity
 import com.kotlity.feature_reminders.presentation.utils.handler
+import com.kotlity.core.presentation.util.openAppSettings
 import com.skydoves.cloudy.cloudy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +75,7 @@ fun RemindersScreen(
     modifier: Modifier = Modifier,
     remindersViewModel: RemindersViewModel = koinViewModel(),
     onAddClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     onShowSnackbar: suspend (String, String?) -> Boolean
 ) {
     val remindersState by remindersViewModel.state.collectAsStateWithLifecycle()
@@ -82,6 +87,7 @@ fun RemindersScreen(
         eventFlow = eventFlow,
         onReminderAction = remindersViewModel::onAction,
         onAddClick = onAddClick,
+        onEditClick = onEditClick,
         onShowSnackbar = onShowSnackbar
     )
 }
@@ -93,10 +99,12 @@ internal fun RemindersScreenSection(
     eventFlow: Flow<Event<ReminderOneTimeEvent, ReminderError>>,
     onReminderAction: (RemindersAction) -> Unit,
     onAddClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     onShowSnackbar: suspend (String, String?) -> Boolean
 ) {
     val context = LocalContext.current
     val undoText = stringResource(id = R.string.undo)
+    val goToAppSettingsText = stringResource(id = R.string.goToAppSettings)
 
     var arrowOffset by remember {
         mutableStateOf(IntOffset.Zero)
@@ -110,7 +118,11 @@ internal fun RemindersScreenSection(
         event
             .onError { reminderError ->
                 val response = reminderError.toString(context)
-                onShowSnackbar(response, null)
+                val isAlarmSecurityError = reminderError is ReminderError.Alarm && reminderError.error == AlarmError.SECURITY
+                if (isAlarmSecurityError) {
+                    val isActionPerformed = onShowSnackbar(response, goToAppSettingsText)
+                    if (isActionPerformed) { context.getActivity()?.let { it.openAppSettings(settingsPath = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM) } }
+                } else onShowSnackbar(response, null)
             }
             .onSuccess { reminderOneTimeEvent ->
                 reminderOneTimeEvent.handler(
@@ -119,7 +131,7 @@ internal fun RemindersScreenSection(
                         val actionResult = onShowSnackbar(response, undoText)
                         if (actionResult) onReminderAction(RemindersAction.OnReminderRestore)
                     },
-                    onEdit = { id -> onReminderAction(RemindersAction.OnReminderEdit(id)) }
+                    onEdit = onEditClick
                 )
             }
     }
@@ -254,6 +266,7 @@ fun RemindersScreenSectionPreview() {
                     eventFlow = emptyFlow(),
                     onReminderAction = { },
                     onAddClick = { /*TODO*/ },
+                    onEditClick = { id -> },
                     onShowSnackbar = { _, _ -> true }
                 )
             }

@@ -33,7 +33,7 @@
     <string name="sqliteException">Error accessing data. Please try again later.</string>
     <string name="databaseIllegalArgumentException">An error occurred while processing data. Please check the information you entered and try again.</string>
 
-    <string name="alarmSecurityException">Insufficient rights to set a reminder. Please grant the necessary permissions in the app settings.</string>
+    <string name="alarmSecurityException">Insufficient rights to perform this action. Please grant the necessary permissions in the app settings.</string>
     <string name="alarmIllegalArgumentException">Error setting up reminder. Check your details and try again.</string>
     <string name="alarmCanceledException">Error setting up reminder. Check your details and try again.</string>
 
@@ -69,5 +69,17 @@
     <string name="loadingIndicatorLabel">Loading indicator label</string>
     <string name="loadingIndicatorColorLabel">Loading wheel color label</string>
     <string name="loadingIndicatorHeightLabel">Loading wheel height label</string>
+
+    <string name="ok">OK</string>
+    <string name="dismiss">No, thanks</string>
+    <string name="grantPermission">Grant permission</string>
+    <string name="goToAppSettings">Go to app settings</string>
+
+    <string name="permissionTitle">Permission required</string>
+
+    <string name="notificationsPermissionText">This app needs permission to send notifications to remind the user about the alarm.</string>
+    <string name="notificationsPermissionPermanentlyDeclinedText">It seems you permanently declined notifications permission. You can go to the app settings to grant it.</string>
+    <string name="exactAlarmsPermissionText">This app needs permission to set precise alarms to properly remind the user about them.</string>
+    <string name="exactAlarmsPermissionPermanentlyDeclinedText">It seems you permanently declined exact alarms permission. You can go to the app settings to grant it.</string>
 
 </resources>

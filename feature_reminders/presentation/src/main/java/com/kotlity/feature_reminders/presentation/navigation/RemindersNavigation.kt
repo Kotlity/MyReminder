@@ -9,9 +9,14 @@ import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.remindersScreen(
     onAddClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     onShowSnackbar: suspend (String, String?) -> Boolean
 ) {
     composable<RemindersDestination> {
-        RemindersScreen(onAddClick = onAddClick, onShowSnackbar = onShowSnackbar)
+        RemindersScreen(
+            onAddClick = onAddClick,
+            onEditClick = onEditClick,
+            onShowSnackbar = onShowSnackbar
+        )
     }
 }

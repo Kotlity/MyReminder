@@ -69,7 +69,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(dimensionResource(id = dimen._30dp))
                 .align(Alignment.BottomStart)
-                .offset(y = dimensionResource(id = dimen.minus50dp))
+                .offset(y = dimensionResource(id = dimen.minus35dp))
                 .zIndex(_1f),
             color = MaterialTheme.colorScheme.primary
         )
@@ -79,7 +79,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .align(Alignment.BottomStart)
                 .offset(
                     x = dimensionResource(id = dimen.minus30dp),
-                    y = dimensionResource(id = dimen._12dp)
+                    y = dimensionResource(id = dimen._30dp)
                 ),
             color = MaterialTheme.colorScheme.tertiary
         )
@@ -89,7 +89,7 @@ fun CirclesSection(modifier: Modifier = Modifier) {
                 .align(Alignment.BottomStart)
                 .offset(
                     x = dimensionResource(id = dimen._35dp),
-                    y = dimensionResource(id = dimen._5dp)
+                    y = dimensionResource(id = dimen._30dp)
                 )
             ,
             color = MaterialTheme.colorScheme.primary
