@@ -12,7 +12,7 @@ android {
     defaultConfig {
         minSdk = 24
 
-        testInstrumentationRunner = "com.kotlity.core.data.InstrumentationTestRunner"
+        testInstrumentationRunner = "com.kotlity.core.InstrumentationTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -55,8 +55,6 @@ dependencies {
 
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
-
-    testImplementation(libs.bundles.test)
 
     androidTestImplementation(libs.bundles.android.test)
 }
