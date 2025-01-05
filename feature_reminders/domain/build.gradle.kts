@@ -1,38 +1,14 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
+    id("java-library")
+    alias(libs.plugins.jetbrains.kotlin.jvm)
 }
-
-android {
-    namespace = "com.kotlity.feature_reminders.domain"
-    compileSdk = 34
-
-    defaultConfig {
-        minSdk = 24
-
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {
     implementation(project(":core:domain"))
 
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.kotlinx.coroutines.core)
 }
