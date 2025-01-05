@@ -11,7 +11,6 @@ android {
     defaultConfig {
         minSdk = 24
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -44,8 +43,4 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
-
-    testImplementation(libs.bundles.test)
-
-    androidTestImplementation(libs.bundles.android.test)
 }

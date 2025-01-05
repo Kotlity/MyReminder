@@ -31,26 +31,6 @@
             </intent-filter>
 
         </activity>
-
-        <receiver
-            android:name="com.kotlity.core.alarm.data.receivers.ExactAlarmPermissionReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/>
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name="com.kotlity.core.alarm.data.receivers.DeviceBootReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name="com.kotlity.core.alarm.data.receivers.AlarmReceiver"
-            android:exported="false"/>
     </application>
 
 </manifest>
