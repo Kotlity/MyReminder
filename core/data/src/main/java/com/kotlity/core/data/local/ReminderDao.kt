@@ -5,16 +5,14 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReminderDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addReminder(reminderEntity: ReminderEntity): Long
-
-    @Update
-    suspend fun updateReminder(reminderEntity: ReminderEntity)
+    @Upsert
+    suspend fun upsertReminder(entity: ReminderEntity)
 
     @Query("DELETE FROM ReminderEntity WHERE id = :id")
     suspend fun deleteReminder(id: Long)

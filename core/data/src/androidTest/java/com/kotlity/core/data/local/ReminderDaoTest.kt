@@ -73,7 +73,7 @@ class ReminderDaoTest: KoinTest {
             )
         )
         reminders.forEach { reminder ->
-            reminderDao.addReminder(reminder)
+            reminderDao.upsertReminder(reminder)
         }
         reminderDao.getAllReminders().test {
             val dbReminders = awaitItem()
@@ -90,11 +90,11 @@ class ReminderDaoTest: KoinTest {
             reminderTime = 13313123L,
             periodicity = Periodicity.ONCE
         )
-        reminderDao.addReminder(reminder)
+        reminderDao.upsertReminder(reminder)
         val dbReminders = reminderDao.getAllReminders().first()
         assertThat(dbReminders).contains(reminder)
         val updatedReminder = reminder.copy(title = "updated mock reminder title")
-        reminderDao.updateReminder(updatedReminder)
+        reminderDao.upsertReminder(updatedReminder)
         val updatedDBReminders = reminderDao.getAllReminders().first()
         assertThat(updatedDBReminders).doesNotContain(reminder)
         assertThat(updatedDBReminders).contains(updatedReminder)
@@ -108,7 +108,7 @@ class ReminderDaoTest: KoinTest {
             reminderTime = 13313123L,
             periodicity = Periodicity.ONCE
         )
-        reminderDao.addReminder(reminder)
+        reminderDao.upsertReminder(reminder)
         val dbReminders = reminderDao.getAllReminders().first()
         assertThat(dbReminders).contains(reminder)
         reminderDao.deleteReminder(reminder.id!!)

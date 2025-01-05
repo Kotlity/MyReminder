@@ -47,7 +47,7 @@ class RemindersRepositoryImplementation(
         val alarmResult = alarmScheduler.addOrUpdateReminder(reminder)
         if (alarmResult is Result.Error) return Result.Error(ReminderError.Alarm(alarmResult.error))
         val databaseResult = databaseCall(dispatcherHandler.io) {
-            reminderDao.addReminder(reminder.toReminderEntity())
+            reminderDao.upsertReminder(reminder.toReminderEntity())
             Result.Success(Unit)
         }
         if (databaseResult is Result.Error) return Result.Error(ReminderError.Database(databaseResult.error))

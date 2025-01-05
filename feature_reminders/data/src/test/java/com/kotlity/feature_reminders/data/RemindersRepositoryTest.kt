@@ -157,46 +157,44 @@ class RemindersRepositoryTest: KoinTest {
     @Test
     fun `deleteReminder successfully delete reminder and returns it`() = runTest {
         val mockReminderToDelete = mockReminderEntities[0]
-        coEvery { reminderDao.getReminderById(any()) } returns mockReminderToDelete
         every { scheduler.cancelReminder(any()) } returns Result.Success(Unit)
+        coEvery { reminderDao.getReminderById(any()) } returns mockReminderToDelete
         val result = remindersRepository.deleteReminder(mockReminderToDelete.id!!)
         assertThat(result).isInstanceOf(Result.Success::class.java)
         assertThat((result as Result.Success).data).isEqualTo(mockReminderToDelete.toReminder())
+        verify(exactly = 1) { scheduler.cancelReminder(any()) }
         coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
         coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
-        verify(exactly = 1) { scheduler.cancelReminder(any()) }
     }
 
     @Test
     fun `deleteReminder returns DatabaseError dot SQLITE_EXCEPTION`() = runTest {
+        every { scheduler.cancelReminder(any()) } returns Result.Success(data = Unit)
         coEvery { reminderDao.getReminderById(any()) } returns null
         coEvery { reminderDao.deleteReminder(any()) } throws SQLiteException()
         val result = remindersRepository.deleteReminder(0)
         assertThat(result).isInstanceOf(Result.Error::class.java)
         assertThat((result as Result.Error).error).isEqualTo(ReminderError.Database(DatabaseError.SQLITE_EXCEPTION))
+        verify(exactly = 1) { scheduler.cancelReminder(any()) }
         coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
         coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
     }
 
     @Test
     fun `deleteReminder returns AlarmError dot SECURITY`() = runTest {
-        coEvery { reminderDao.getReminderById(any()) } returns null
         every { scheduler.cancelReminder(any()) } returns Result.Error(AlarmError.SECURITY)
         val result = remindersRepository.deleteReminder(0)
         assertThat(result).isInstanceOf(Result.Error::class.java)
         assertThat((result as Result.Error).error).isEqualTo(ReminderError.Alarm(AlarmError.SECURITY))
-        coVerify(exactly = 1) { reminderDao.getReminderById(any()) }
-        coVerify(exactly = 1) { reminderDao.deleteReminder(any()) }
         verify(exactly = 1) { scheduler.cancelReminder(any()) }
     }
 
     @Test
     fun `restoreReminder successfully restored reminder`() = runTest {
-        coEvery { reminderDao.addReminder(any()) } returns Long.MAX_VALUE
         every { scheduler.addOrUpdateReminder(any()) } returns Result.Success(data = Unit)
         val result = remindersRepository.restoreReminder(mockReminderEntities.last().toReminder())
         assertThat(result).isInstanceOf(Result.Success::class.java)
-        coVerify(exactly = 1) { reminderDao.addReminder(any()) }
+        coVerify(exactly = 1) { reminderDao.upsertReminder(any()) }
         verify(exactly = 1) { scheduler.addOrUpdateReminder(any()) }
     }
 
