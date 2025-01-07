@@ -2,16 +2,15 @@ package com.kotlity.feature_reminders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kotlity.TimeFormatter
 import com.kotlity.core.Reminder
 import com.kotlity.core.util.ReminderError
 import com.kotlity.core.util.onError
-import com.kotlity.core.util.onErrorFlow
-import com.kotlity.core.util.onLoadingFlow
 import com.kotlity.core.util.onSuccess
-import com.kotlity.core.util.onSuccessFlow
 import com.kotlity.core.util.Event
 import com.kotlity.core.util.UiText
 import com.kotlity.core.ResourcesConstant._5000
+import com.kotlity.core.util.onLoading
 import com.kotlity.feature_reminders.actions.RemindersAction
 import com.kotlity.feature_reminders.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.mappers.toReminderUi
@@ -20,6 +19,7 @@ import com.kotlity.feature_reminders.states.SelectedReminderState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,7 +27,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RemindersViewModel(private val remindersRepository: RemindersRepository): ViewModel() {
+class RemindersViewModel(
+    private val remindersRepository: RemindersRepository,
+    private val timeFormatter: TimeFormatter
+): ViewModel() {
 
     private val _state = MutableStateFlow(RemindersState())
     internal val state = _state
@@ -58,25 +61,28 @@ class RemindersViewModel(private val remindersRepository: RemindersRepository): 
 
     private fun onLoadReminders() {
         remindersRepository.getAllReminders()
-            .onLoadingFlow {
-                _state.update {
-                    it.copy(isLoading = true)
-                }
-            }
-            .onSuccessFlow { reminders ->
-                val remindersUi = reminders.map { it.toReminderUi() }
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        reminders = remindersUi
-                    )
-                }
-            }
-            .onErrorFlow { error ->
-                _state.update {
-                    it.copy(isLoading = false)
-                }
-                sendErrorToChannel(ReminderError.Database(error))
+            .combine(timeFormatter.is24HourFormat) { result, is24HourFormat ->
+                result
+                    .onLoading {
+                        _state.update {
+                            it.copy(isLoading = true)
+                        }
+                    }
+                    .onSuccess { reminders ->
+                        val remindersUi = reminders.map { it.toReminderUi(is24HourFormat = is24HourFormat) }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                reminders = remindersUi
+                            )
+                        }
+                    }
+                    .onError { error ->
+                        _state.update {
+                            it.copy(isLoading = false)
+                        }
+                        sendErrorToChannel(ReminderError.Database(error))
+                    }
             }
             .launchIn(viewModelScope)
     }

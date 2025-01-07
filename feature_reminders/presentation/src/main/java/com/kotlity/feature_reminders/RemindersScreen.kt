@@ -1,6 +1,7 @@
 package com.kotlity.feature_reminders
 
 import android.provider.Settings
+import android.text.format.DateFormat
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -239,14 +240,20 @@ fun RemindersScreenSectionPreview() {
         mutableStateOf(RemindersState())
     }
 
+    val context = LocalContext.current
+
+    val is24HourFormat by remember {
+        mutableStateOf(DateFormat.is24HourFormat(context))
+    }
+
     val mockReminders = (0..5).map { index ->
         Reminder(
             id = index.toLong(),
             title = "title$index",
-            reminderTime = 1734127200000 + index.toLong() * 1000,
+            reminderTime = System.currentTimeMillis() + (index + 1).toLong() * 10000,
             periodicity = if (index % 2 == 0) Periodicity.WEEKDAYS else Periodicity.ONCE
         )
-    }.map { it.toReminderUi() }
+    }.map { it.toReminderUi(is24HourFormat = is24HourFormat) }
 
     LaunchedEffect(key1 = Unit) {
         remindersState = remindersState.copy(isLoading = true)
