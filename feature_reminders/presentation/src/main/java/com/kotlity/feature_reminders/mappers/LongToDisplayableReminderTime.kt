@@ -8,10 +8,11 @@ import org.threeten.bp.format.DateTimeFormatter
 fun Long.toDisplayableReminderTime(
     instant: Instant = Instant.ofEpochMilli(this),
     zoneId: ZoneId = ZoneId.systemDefault(),
-    timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm"),
+    is24HourFormat: Boolean = true,
     dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 ): DisplayableReminderTime {
     val zonedDateTime = org.threeten.bp.ZonedDateTime.ofInstant(instant, zoneId)
+    val timeFormatter = if (is24HourFormat) DateTimeFormatter.ofPattern("HH:mm") else DateTimeFormatter.ofPattern("hh:mm a")
     val hoursAndMinutesString = zonedDateTime.format(timeFormatter)
     val dayAndMonthAndYearString = zonedDateTime.format(dateFormatter)
     return DisplayableReminderTime(

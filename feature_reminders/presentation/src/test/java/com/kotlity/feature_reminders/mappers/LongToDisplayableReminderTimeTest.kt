@@ -1,7 +1,6 @@
 package com.kotlity.feature_reminders.mappers
 
 import com.google.common.truth.Truth.assertThat
-import com.kotlity.feature_reminders.mappers.toDisplayableReminderTime
 import org.junit.Test
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
@@ -56,6 +55,7 @@ class LongToDisplayableReminderTimeTest {
 
         val expectedDate = "01/08/2025"
         val result = reminderTime.toDisplayableReminderTime(
+            is24HourFormat = false,
             dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
         )
         assertThat(result.date).isEqualTo(expectedDate)
@@ -68,9 +68,7 @@ class LongToDisplayableReminderTimeTest {
         ).toInstant().toEpochMilli()
 
         val expectedTime = "07:56 AM"
-        val result = reminderTime.toDisplayableReminderTime(
-            timeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
-        )
+        val result = reminderTime.toDisplayableReminderTime(is24HourFormat = false)
         assertThat(result.time).isEqualTo(expectedTime)
     }
 
@@ -83,7 +81,7 @@ class LongToDisplayableReminderTimeTest {
         val expectedTime = "12:15 AM"
         val expectedDate = "03/16/2025"
         val result = reminderTime.toDisplayableReminderTime(
-            timeFormatter = DateTimeFormatter.ofPattern("hh:mm a"),
+            is24HourFormat = false,
             dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
         )
 
