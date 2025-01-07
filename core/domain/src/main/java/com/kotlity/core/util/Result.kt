@@ -11,6 +11,13 @@ sealed interface Result<out T, out E: resultError> {
     data object Loading: Result<Nothing, Nothing>
 }
 
+inline fun <T, E: resultError> Result<T, E>.onLoading(action: () -> Unit): Result<T, E> {
+    return if (this is Result.Loading) {
+        action()
+        this
+    } else this
+}
+
 inline fun <T, E: resultError> Result<T, E>.onSuccess(action: (T) -> Unit): Result<T, E> {
     return if (this is Result.Success) {
         action(data)
