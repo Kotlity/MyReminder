@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/feature_reminder_editor" />
             <option value="$PROJECT_DIR$/feature_reminder_editor/data" />
             <option value="$PROJECT_DIR$/feature_reminder_editor/domain" />
+            <option value="$PROJECT_DIR$/feature_reminder_editor/presentation" />
             <option value="$PROJECT_DIR$/feature_reminders" />
             <option value="$PROJECT_DIR$/feature_reminders/data" />
             <option value="$PROJECT_DIR$/feature_reminders/domain" />
