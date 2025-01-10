@@ -35,12 +35,18 @@ fun ReminderError.toString(context: Context): String {
     }
 }
 
-fun AlarmValidationError.toString(context: Context): String {
+fun AlarmValidationError.AlarmTitleValidation.toString(context: Context): String {
     val resId = when(this) {
         AlarmValidationError.AlarmTitleValidation.BLANK -> R.string.titleIsBlank
         AlarmValidationError.AlarmTitleValidation.STARTS_WITH_LOWERCASE -> R.string.titleStartsWithLowerCase
         AlarmValidationError.AlarmTitleValidation.STARTS_WITH_DIGIT -> R.string.titleStartsWithADigit
         AlarmValidationError.AlarmTitleValidation.TOO_LONG -> R.string.titleIsTooLong
+    }
+    return context.getString(resId)
+}
+
+fun AlarmValidationError.AlarmReminderTimeValidation.toString(context: Context): String {
+    val resId = when(this) {
         is AlarmValidationError.AlarmReminderTimeValidation.Error -> R.string.reminderTimePastTense
         AlarmValidationError.AlarmReminderTimeValidation.Success -> R.string.reminderTimeSetSuccessful
     }
