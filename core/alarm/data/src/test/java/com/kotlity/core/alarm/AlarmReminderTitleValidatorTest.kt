@@ -1,67 +1,55 @@
 package com.kotlity.core.alarm
 
 import com.google.common.truth.Truth.assertThat
-import com.kotlity.core.alarm.validators.AlarmReminderTitleValidator
+import com.kotlity.core.alarm.di.alarmReminderTitleValidatorModule
 import com.kotlity.core.util.AlarmValidationError
-import com.kotlity.core.util.Result
-import io.mockk.every
-import io.mockk.impl.annotations.MockK
-import io.mockk.verify
+import com.kotlity.core.util.ValidationStatus
+import com.kotlity.core.util.Validator
 import org.junit.Test
+import org.koin.test.inject
 
-class AlarmReminderTitleValidatorTest: BaseValidator() {
+class AlarmReminderTitleValidatorTest: AlarmReminderBaseValidatorDependencyProvider(modules = listOf(alarmReminderTitleValidatorModule)) {
 
-    @MockK
-    private lateinit var alarmReminderTitleValidator: AlarmReminderTitleValidator
+    private val alarmReminderTitleValidator by inject<Validator<String, AlarmValidationError.AlarmTitleValidation>>()
 
     @Test
     fun `alarm reminder title validator with blank title returns error`() {
         val blankTitle = ""
-        val result = Result.Error(error = AlarmValidationError.AlarmTitleValidation.BLANK)
-        every { alarmReminderTitleValidator(blankTitle) } returns result
-        alarmReminderTitleValidator(blankTitle)
-        verify { alarmReminderTitleValidator(blankTitle) }
-        assertThat(alarmReminderTitleValidator(blankTitle)).isEqualTo(result)
+        val expectedResult = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.BLANK)
+        val result = alarmReminderTitleValidator.validate(value = blankTitle)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     fun `alarm reminder title validator starts with a lower case returns error`() {
         val titleThatStartsWithLowerCase = "test reminder"
-        val result = Result.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_LOWERCASE)
-        every { alarmReminderTitleValidator(titleThatStartsWithLowerCase) } returns result
-        alarmReminderTitleValidator(titleThatStartsWithLowerCase)
-        verify { alarmReminderTitleValidator(titleThatStartsWithLowerCase) }
-        assertThat(alarmReminderTitleValidator(titleThatStartsWithLowerCase)).isEqualTo(result)
+        val expectedResult = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_LOWERCASE)
+        val result = alarmReminderTitleValidator.validate(value = titleThatStartsWithLowerCase)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     fun `alarm reminder title validator starts with digit returns error`() {
         val titleThatStartsWithDigit = "1Test reminder"
-        val result = Result.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_DIGIT)
-        every { alarmReminderTitleValidator(titleThatStartsWithDigit) } returns result
-        alarmReminderTitleValidator(titleThatStartsWithDigit)
-        verify { alarmReminderTitleValidator(titleThatStartsWithDigit) }
-        assertThat(alarmReminderTitleValidator(titleThatStartsWithDigit)).isEqualTo(result)
+        val expectedResult = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_DIGIT)
+        val result = alarmReminderTitleValidator.validate(value = titleThatStartsWithDigit)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     fun `alarm reminder title validator too long returns error`() {
         val tooLongTitleReminder = "This is a very long test reminder so it is not accessible"
-        val result = Result.Error(error = AlarmValidationError.AlarmTitleValidation.TOO_LONG)
-        every { alarmReminderTitleValidator(tooLongTitleReminder) } returns result
-        alarmReminderTitleValidator(tooLongTitleReminder)
-        verify { alarmReminderTitleValidator(tooLongTitleReminder) }
-        assertThat(alarmReminderTitleValidator(tooLongTitleReminder)).isEqualTo(result)
+        val expectedResult = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.TOO_LONG)
+        val result = alarmReminderTitleValidator.validate(value = tooLongTitleReminder)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     fun `alarm reminder title validator returns success`() {
         val accessibleReminderTitle = "Feed the cat"
-        val result = Result.Success(Unit)
-        every { alarmReminderTitleValidator(accessibleReminderTitle) } returns result
-        alarmReminderTitleValidator(accessibleReminderTitle)
-        verify { alarmReminderTitleValidator(accessibleReminderTitle) }
-        assertThat(alarmReminderTitleValidator(accessibleReminderTitle)).isEqualTo(result)
+        val expectedResult = ValidationStatus.Success
+        val result = alarmReminderTitleValidator.validate(value = accessibleReminderTitle)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
 }

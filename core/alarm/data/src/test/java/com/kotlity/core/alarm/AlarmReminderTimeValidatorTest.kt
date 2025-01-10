@@ -1,42 +1,33 @@
 package com.kotlity.core.alarm
 
 import com.google.common.truth.Truth.assertThat
-import com.kotlity.core.alarm.validators.AlarmReminderTimeValidator
+import com.kotlity.core.alarm.di.alarmReminderTimeValidatorModule
 import com.kotlity.core.util.AlarmValidationError
-import com.kotlity.core.util.Result
-import io.mockk.every
-import io.mockk.impl.annotations.MockK
-import io.mockk.verify
+import com.kotlity.core.util.ValidationStatus
+import com.kotlity.core.util.Validator
 import org.junit.Test
-import kotlin.test.fail
+import org.koin.test.inject
 
-class AlarmReminderTimeValidatorTest: BaseValidator() {
+class AlarmReminderTimeValidatorTest: AlarmReminderBaseValidatorDependencyProvider(modules = listOf(alarmReminderTimeValidatorModule)) {
 
-    @MockK
-    private lateinit var alarmReminderTimeValidator: AlarmReminderTimeValidator
+    private val alarmReminderTimeValidator by inject<Validator<Long, AlarmValidationError.AlarmReminderTimeValidation>>()
 
     @Test
     fun `alarm reminder time validation returns success`() {
-        val currentTimeMillis = System.currentTimeMillis()
-        every { alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.plus(10000), currentTimeMillis = currentTimeMillis) } returns Result.Success(Unit)
-        alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.plus(10000), currentTimeMillis = currentTimeMillis)
-        verify { alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.plus(10000), currentTimeMillis = currentTimeMillis) }
-        assertThat(alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.plus(10000), currentTimeMillis = currentTimeMillis)).isEqualTo(Result.Success(Unit))
+        val selectedTime = System.currentTimeMillis() + 60 * 1000
+        val expectedResult = ValidationStatus.Success
+        val result = alarmReminderTimeValidator.validate(value = selectedTime)
+        assertThat(result).isEqualTo(expectedResult)
     }
 
     @Test
     fun `alarm reminder time validation returns error with reminderTimeSet`() {
-        val currentTimeMillis = System.currentTimeMillis()
-        val expectedReminderTimeSet = currentTimeMillis + 60 * 1000
-        every { alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.minus(10000), currentTimeMillis = currentTimeMillis) } returns Result.Error(error = AlarmValidationError.AlarmReminderTimeValidation.Error(reminderTimeSet = expectedReminderTimeSet))
-        val futureTimeReminderMillis = alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.minus(10000), currentTimeMillis = currentTimeMillis)
-        alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.minus(10000), currentTimeMillis = currentTimeMillis)
-        verify { alarmReminderTimeValidator(selectedTimeMillis = currentTimeMillis.minus(10000), currentTimeMillis = currentTimeMillis) }
-        assertThat(futureTimeReminderMillis).isInstanceOf(Result.Error::class.java)
-        if (futureTimeReminderMillis is Result.Error && futureTimeReminderMillis.error is AlarmValidationError.AlarmReminderTimeValidation.Error) {
-            val reminderTimeSet = (futureTimeReminderMillis.error as AlarmValidationError.AlarmReminderTimeValidation.Error).reminderTimeSet
-            assertThat(reminderTimeSet).isEqualTo(expectedReminderTimeSet)
-        } else fail("Expected Result.Error with AlarmValidationError.AlarmReminderTimeValidation.Error")
+        val selectedTime = System.currentTimeMillis() - 60 * 1000
+        val result = alarmReminderTimeValidator.validate(value = selectedTime)
+        assertThat(result).isInstanceOf(ValidationStatus.Error::class.java)
+        assertThat((result as ValidationStatus.Error).error).isInstanceOf(AlarmValidationError.AlarmReminderTimeValidation.Error::class.java)
+        val reminderTimeSet = (result.error as AlarmValidationError.AlarmReminderTimeValidation.Error).reminderTimeSet
+        assertThat(reminderTimeSet).isGreaterThan(selectedTime)
     }
 
 }
