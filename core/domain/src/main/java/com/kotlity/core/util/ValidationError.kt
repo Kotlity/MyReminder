@@ -1,6 +1,6 @@
 package com.kotlity.core.util
 
-interface ValidationError: Error
+sealed interface ValidationError: Error
 
 inline fun ValidationError.handleValidationError(
     onAlarmValidationError: (AlarmValidationError) -> Unit
