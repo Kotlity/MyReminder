@@ -1,10 +1,6 @@
 package com.kotlity.core.util
 
 import android.content.Context
-import com.kotlity.core.util.AlarmError
-import com.kotlity.core.util.AlarmValidationError
-import com.kotlity.core.util.DatabaseError
-import com.kotlity.core.util.ReminderError
 import com.kotlity.core.resources.R
 
 private fun DatabaseError.toString(context: Context): String {
@@ -47,8 +43,7 @@ fun AlarmValidationError.AlarmTitleValidation.toString(context: Context): String
 
 fun AlarmValidationError.AlarmReminderTimeValidation.toString(context: Context): String {
     val resId = when(this) {
-        is AlarmValidationError.AlarmReminderTimeValidation.Error -> R.string.reminderTimePastTense
-        AlarmValidationError.AlarmReminderTimeValidation.Success -> R.string.reminderTimeSetSuccessful
+        AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE -> R.string.reminderTimePastTense
     }
     return context.getString(resId)
 }

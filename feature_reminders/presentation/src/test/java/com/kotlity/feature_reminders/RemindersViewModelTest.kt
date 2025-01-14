@@ -15,6 +15,8 @@ import com.kotlity.feature_reminders.di.testRemindersRepositoryModule
 import com.kotlity.feature_reminders.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.mappers.toReminderUi
 import com.kotlity.feature_reminders.states.SelectedReminderState
+import com.kotlity.utils.KoinDependencyProvider
+import com.kotlity.utils.MainDispatcherRule
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit4.MockKRule
@@ -49,7 +51,7 @@ private val mockSelectedReminderState = SelectedReminderState(id = 1, position =
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RemindersViewModelTest: KoinTest {
+class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemindersRepositoryModule)) {
 
     @RelaxedMockK
     private lateinit var timeFormatter: TimeFormatter
@@ -57,17 +59,11 @@ class RemindersViewModelTest: KoinTest {
     private val testRemindersRepository by inject<TestRemindersRepository>()
     private lateinit var remindersViewModel: RemindersViewModel
 
-    @get:Rule(order = 0)
-    val koinTestRule = KoinTestRule.create {
-        printLogger()
-        modules(testRemindersRepositoryModule)
-    }
-
-    @get:Rule(order = 1)
+    @get:Rule
     val mockKRule = MockKRule(this)
 
-    @get:Rule(order = 2)
-    val mainDispatcherRule = MainDispatcherRule()
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule(coroutineDispatcher = UnconfinedTestDispatcher())
 
     @Before
     fun setup() {
