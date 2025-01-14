@@ -56,5 +56,7 @@ dependencies {
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
 
+    testImplementation(libs.bundles.test)
+
     androidTestImplementation(libs.bundles.android.test)
 }
