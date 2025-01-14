@@ -48,14 +48,15 @@
     <string name="titleStartsWithADigit">Title cannot starts with a digit !</string>
     <string name="titleIsTooLong">Title is too long !</string>
 
-    <string name="reminderTimePastTense">You can not select past time! Time increased by 1 minute from the current moment</string>
-    <string name="reminderTimeSetSuccessful">The timing was chosen successfully.</string>
+    <string name="reminderTimePastTense">You cannot choose the past tense ! Please choose the future !</string>
 
     <string name="notificationChannelId" translatable="false">my_reminder_channel_id</string>
     <string name="notificationChannelName" translatable="false">MyReminder</string>
     <string name="notificationChannelDescription" translatable="false">This channel is used to send reminder notifications</string>
     <string name="notificationContentText">Hurry up! Don\'t forget your task :)</string>
-    
+
+    <string name="reminderSuccessfullyAdded">The alarm has been successfully added !</string>
+    <string name="reminderSuccessfullyUpdated">The alarm has been successfully updated !</string>
     <string name="reminderSuccessfullyDeleted">The alarm has been removed !</string>
     <string name="undo">Undo</string>
 

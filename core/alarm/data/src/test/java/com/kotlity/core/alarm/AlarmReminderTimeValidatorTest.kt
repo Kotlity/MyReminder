@@ -21,13 +21,12 @@ class AlarmReminderTimeValidatorTest: AlarmReminderBaseValidatorDependencyProvid
     }
 
     @Test
-    fun `alarm reminder time validation returns error with reminderTimeSet`() {
+    fun `alarm reminder time validation returns error`() {
         val selectedTime = System.currentTimeMillis() - 60 * 1000
         val result = alarmReminderTimeValidator.validate(value = selectedTime)
         assertThat(result).isInstanceOf(ValidationStatus.Error::class.java)
-        assertThat((result as ValidationStatus.Error).error).isInstanceOf(AlarmValidationError.AlarmReminderTimeValidation.Error::class.java)
-        val reminderTimeSet = (result.error as AlarmValidationError.AlarmReminderTimeValidation.Error).reminderTimeSet
-        assertThat(reminderTimeSet).isGreaterThan(selectedTime)
+        assertThat((result as ValidationStatus.Error).error).isInstanceOf(AlarmValidationError.AlarmReminderTimeValidation::class.java)
+        assertThat(result.error).isEqualTo(AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
     }
 
 }

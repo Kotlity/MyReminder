@@ -1,7 +1,5 @@
 package com.kotlity.core.util
 
-import com.kotlity.core.util.Error
-
 typealias eventError = Error
 
 sealed interface Event<out T, out E: eventError> {

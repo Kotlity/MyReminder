@@ -2,13 +2,15 @@ package com.kotlity.feature_reminder_editor.mappers
 
 import com.google.common.truth.Truth.assertThat
 import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorTime
+import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorTimeHourFormat
+import com.kotlity.feature_reminder_editor.models.HourFormat
 import org.junit.Test
 import java.util.Calendar
 
 class LongToDisplayableReminderEditorTimeTest {
 
     @Test
-    fun `should display 04 as hours, 05 as minutes and PM as amOrPm`() {
+    fun `should display 04 as hours, 05 as minutes and HourFormat dot PM`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 16, 5)
         }.timeInMillis
@@ -16,7 +18,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "04",
             minutes = "05",
-            amOrPm = "PM"
+            hourFormat = DisplayableReminderEditorTimeHourFormat(value = "PM", hourFormat = HourFormat.PM)
         )
 
         val result = timestamp.toDisplayableReminderEditorTime(is24HourFormat = false)
@@ -24,7 +26,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 04 as hours, 05 as minutes and AM as amOrPm`() {
+    fun `should display 04 as hours, 05 as minutes and HourFormat dot AM`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 4, 5)
         }.timeInMillis
@@ -32,7 +34,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "04",
             minutes = "05",
-            amOrPm = "AM"
+            hourFormat = DisplayableReminderEditorTimeHourFormat(value = "AM", hourFormat = HourFormat.AM)
         )
 
         val result = timestamp.toDisplayableReminderEditorTime(is24HourFormat = false)
@@ -40,7 +42,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 04 as hours, 05 as minutes and null as amOrPm`() {
+    fun `should display 04 as hours, 05 as minutes`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 4, 5)
         }.timeInMillis
@@ -48,7 +50,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "04",
             minutes = "05",
-            amOrPm = null
+            hourFormat = DisplayableReminderEditorTimeHourFormat()
         )
 
         val result = timestamp.toDisplayableReminderEditorTime()
@@ -56,7 +58,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 16 as hours, 05 as minutes and null as amOrPm`() {
+    fun `should display 16 as hours, 05 as minutes`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 16, 5)
         }.timeInMillis
@@ -64,7 +66,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "16",
             minutes = "05",
-            amOrPm = null
+            hourFormat = DisplayableReminderEditorTimeHourFormat()
         )
 
         val result = timestamp.toDisplayableReminderEditorTime()
@@ -72,7 +74,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 00 as hours, 00 as minutes and null as amOrPm`() {
+    fun `should display 00 as hours, 00 as minutes`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 24, 0)
         }.timeInMillis
@@ -80,7 +82,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "00",
             minutes = "00",
-            amOrPm = null
+            hourFormat = DisplayableReminderEditorTimeHourFormat()
         )
 
         val result = timestamp.toDisplayableReminderEditorTime()
@@ -88,7 +90,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 11 as hours, 59 as minutes and PM as amOrPm`() {
+    fun `should display 11 as hours, 59 as minutes and HourFormat dot PM`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 23, 59)
         }.timeInMillis
@@ -96,7 +98,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "11",
             minutes = "59",
-            amOrPm = "PM"
+            hourFormat = DisplayableReminderEditorTimeHourFormat(value = "PM", hourFormat = HourFormat.PM)
         )
 
         val result = timestamp.toDisplayableReminderEditorTime(is24HourFormat = false)
@@ -104,7 +106,7 @@ class LongToDisplayableReminderEditorTimeTest {
     }
 
     @Test
-    fun `should display 12 as hours, 00 as minutes and AM as amOrPm`() {
+    fun `should display 12 as hours, 00 as minutes and HourFormat dot AM`() {
         val timestamp = Calendar.getInstance().apply {
             set(2025, 0, 8, 24, 0)
         }.timeInMillis
@@ -112,7 +114,7 @@ class LongToDisplayableReminderEditorTimeTest {
             value = timestamp,
             hours = "12",
             minutes = "00",
-            amOrPm = "AM"
+            hourFormat = DisplayableReminderEditorTimeHourFormat(value = "AM", hourFormat = HourFormat.AM)
         )
 
         val result = timestamp.toDisplayableReminderEditorTime(is24HourFormat = false)

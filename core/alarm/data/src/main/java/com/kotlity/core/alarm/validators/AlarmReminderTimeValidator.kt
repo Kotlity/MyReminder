@@ -8,11 +8,7 @@ class AlarmReminderTimeValidator: Validator<Long, AlarmValidationError.AlarmRemi
 
     override fun validate(value: Long): ValidationStatus<AlarmValidationError.AlarmReminderTimeValidation> {
         val currentTime = System.currentTimeMillis()
-        if (value < currentTime) {
-            val reminderTimeSet = currentTime + 60 * 1000
-            val alarmReminderTimeValidationError = AlarmValidationError.AlarmReminderTimeValidation.Error(reminderTimeSet = reminderTimeSet)
-            return ValidationStatus.Error(error = alarmReminderTimeValidationError)
-        }
+        if (value < currentTime) return ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
         return ValidationStatus.Success
     }
 }

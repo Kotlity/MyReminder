@@ -1,10 +1,12 @@
 package com.kotlity.feature_reminder_editor.states
 
+import com.kotlity.feature_reminder_editor.models.PickerDialog
 import com.kotlity.feature_reminder_editor.models.ReminderEditorUi
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ReminderEditorState(
-    val reminderEditor: ReminderEditorUi? = null,
-    val isTimePickerDialogVisible: Boolean = false,
-    val isDatePickerDialogVisible: Boolean = false,
-    val isPeriodicityDropdownMenuExpanded: Boolean = false
+    val reminderEditor: ReminderEditorUi = ReminderEditorUi(),
+    val pickerDialog: PickerDialog? = null,
+    val isPeriodicityDropdownMenuExpanded: Boolean = false,
 )

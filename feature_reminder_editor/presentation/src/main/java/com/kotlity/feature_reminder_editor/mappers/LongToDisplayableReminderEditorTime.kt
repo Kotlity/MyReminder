@@ -1,6 +1,8 @@
 package com.kotlity.feature_reminder_editor.mappers
 
 import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorTime
+import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorTimeHourFormat
+import com.kotlity.feature_reminder_editor.models.HourFormat
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
@@ -22,10 +24,15 @@ fun Long.toDisplayableReminderEditorTime(
 
     val (hours, minutes) = hoursAndMinutes.split(":") // hours - 05 or 17, minutes - 25
 
+    val hourFormat = DisplayableReminderEditorTimeHourFormat(
+        value = amOrPm, // "AM" or "PM" or null
+        hourFormat = amOrPm?.let { HourFormat.valueOf(it) } // HourFormat.AM or HourFormat.PM or null
+    )
+
     return DisplayableReminderEditorTime(
         value = this,
         hours = hours,
         minutes = minutes,
-        amOrPm = amOrPm
+        hourFormat = hourFormat
     )
 }
