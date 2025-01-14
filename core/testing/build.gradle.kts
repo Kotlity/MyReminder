@@ -6,12 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.kotlity.core.data"
+    namespace = "com.kotlity"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 24
 
+        testInstrumentationRunner = "com.kotlity.InstrumentationTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -44,7 +45,9 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    implementation(project(":core:resources"))
+    implementation(project(":core:data"))
+    implementation(project(":core:alarm:domain"))
+    implementation(project(":core:alarm:data"))
 
     implementation(libs.bundles.android.core)
 
@@ -54,4 +57,12 @@ dependencies {
 
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.bundles.test)
+    implementation(libs.bundles.android.test)
+
+    testImplementation(libs.bundles.test)
+
+    androidTestImplementation(libs.bundles.android.test)
+
 }

@@ -13,7 +13,9 @@ import com.kotlity.core.util.DatabaseError
 import com.kotlity.core.util.DispatcherHandler
 import com.kotlity.core.util.ReminderError
 import com.kotlity.core.util.Result
-import com.kotlity.feature_reminder_editor.di.testDispatcherHandlerModule
+import com.kotlity.di.testDispatcherHandlerModule
+import com.kotlity.utils.KoinDependencyProvider
+import com.kotlity.utils.MainDispatcherRule
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -25,8 +27,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.koin.test.KoinTest
-import org.koin.test.KoinTestRule
 import org.koin.test.inject
 
 private val mockReminderEntity = ReminderEntity(
@@ -41,7 +41,7 @@ private val updatedReminder = mockReminderEntity.toReminder().copy(
     reminderTime = mockReminderEntity.reminderTime + 3600 * 1000
 )
 
-class ReminderEditorRepositoryTest: KoinTest {
+class ReminderEditorRepositoryTest: KoinDependencyProvider(modules = listOf(testDispatcherHandlerModule)) {
 
     @MockK
     private lateinit var alarmScheduler: Scheduler
@@ -52,12 +52,6 @@ class ReminderEditorRepositoryTest: KoinTest {
     private val dispatcherHandler by inject<DispatcherHandler>()
 
     private lateinit var reminderEditorRepository: ReminderEditorRepository
-
-    @get:Rule(order = 0)
-    val koinTestRule = KoinTestRule.create {
-        printLogger()
-        modules(testDispatcherHandlerModule)
-    }
 
     @get:Rule(order = 1)
     val mockKRule = MockKRule(this)

@@ -63,6 +63,8 @@ dependencies {
 
     debugImplementation(libs.bundles.compose.debug)
 
+    testImplementation(project(":core:testing"))
+
     testImplementation(libs.bundles.test)
     testImplementation(libs.threeTenabp)
 

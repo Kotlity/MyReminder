@@ -14,7 +14,8 @@ import com.kotlity.core.util.DatabaseError
 import com.kotlity.core.util.DispatcherHandler
 import com.kotlity.core.util.ReminderError
 import com.kotlity.core.util.Result
-import com.kotlity.feature_reminders.di.testDispatcherHandlerModule
+import com.kotlity.di.testDispatcherHandlerModule
+import com.kotlity.utils.KoinDependencyProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,8 +32,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.koin.test.KoinTest
-import org.koin.test.KoinTestRule
 import org.koin.test.inject
 
 private val mockReminderEntities = listOf(
@@ -57,7 +56,7 @@ private val mockReminderEntities = listOf(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RemindersRepositoryTest: KoinTest {
+class RemindersRepositoryTest: KoinDependencyProvider(modules = listOf(testDispatcherHandlerModule)) {
 
     @MockK(relaxUnitFun = true)
     private lateinit var reminderDao: ReminderDao
@@ -69,19 +68,12 @@ class RemindersRepositoryTest: KoinTest {
     private lateinit var remindersRepository: RemindersRepository
 
     @get:Rule
-    val koinTestRule = KoinTestRule.create {
-        printLogger()
-        modules(testDispatcherHandlerModule)
-    }
-
-    @get:Rule
     val mockKRule = MockKRule(this)
 
     @Before
     fun setup() {
         Dispatchers.setMain(dispatcherHandler.io)
-        remindersRepository =
-            RemindersRepositoryImplementation(reminderDao, scheduler, dispatcherHandler)
+        remindersRepository = RemindersRepositoryImplementation(reminderDao, scheduler, dispatcherHandler)
     }
 
     @After
