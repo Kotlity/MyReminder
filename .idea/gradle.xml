@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/core/notification/domain" />
             <option value="$PROJECT_DIR$/core/presentation" />
             <option value="$PROJECT_DIR$/core/resources" />
+            <option value="$PROJECT_DIR$/core/testing" />
             <option value="$PROJECT_DIR$/feature_reminder_editor" />
             <option value="$PROJECT_DIR$/feature_reminder_editor/data" />
             <option value="$PROJECT_DIR$/feature_reminder_editor/domain" />
