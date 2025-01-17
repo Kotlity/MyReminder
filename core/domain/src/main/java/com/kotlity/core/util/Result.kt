@@ -9,6 +9,21 @@ sealed interface Result<out T, out E: resultError> {
     data class Success<out T>(val data: T): Result<T, Nothing>
     data class Error<out E: resultError>(val error: E): Result<Nothing, E>
     data object Loading: Result<Nothing, Nothing>
+
+    val isSuccess: Boolean
+        get() = this is Success
+
+    val isError: Boolean
+        get() = this is Error
+
+    val isLoading: Boolean
+        get() = this is Loading
+
+    val getData: T
+        get() = (this as Success).data
+
+    val getError: E
+        get() = (this as Error).error
 }
 
 inline fun <T, E: resultError> Result<T, E>.onLoading(action: () -> Unit): Result<T, E> {
