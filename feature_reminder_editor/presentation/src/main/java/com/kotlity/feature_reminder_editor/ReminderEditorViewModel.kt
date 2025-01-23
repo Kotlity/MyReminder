@@ -51,9 +51,9 @@ class ReminderEditorViewModel(
     private val timeValidator: Validator<Long, AlarmValidationError.AlarmReminderTimeValidation>
 ): ViewModel() {
 
-    private val id = savedStateHandle.toRoute<ReminderEditorDestination>().id
+    private val id: Long? by lazy { savedStateHandle.toRoute<ReminderEditorDestination>().id }
 
-    val reminderEditorState: StateFlow<ReminderEditorState> = savedStateHandle.getStateFlow(key = REMINDER_EDITOR_STATE_KEY, initialValue = ReminderEditorState())
+    internal val reminderEditorState: StateFlow<ReminderEditorState> = savedStateHandle.getStateFlow(key = REMINDER_EDITOR_STATE_KEY, initialValue = ReminderEditorState())
         .onStart {
             onAction(ReminderEditorAction.OnInitiallyLoadReminderIfNeeded)
             observeIs24HourFormat()
@@ -65,7 +65,7 @@ class ReminderEditorViewModel(
         )
 
     private val _eventChannel = Channel<Event<ReminderEditorOneTimeEvent, ReminderError>>()
-    val eventChannel = _eventChannel.receiveAsFlow()
+    val eventFlow = _eventChannel.receiveAsFlow()
 
     var titleValidationStatus by derivedStateOf {
         mutableStateOf<ValidationStatus<AlarmValidationError.AlarmTitleValidation>>(ValidationStatus.Unspecified)
@@ -91,7 +91,7 @@ class ReminderEditorViewModel(
             is ReminderEditorAction.OnPickerDialogVisibilityUpdate -> onPickerDialogVisibilityUpdate(reminderEditorAction.pickerDialog)
             is ReminderEditorAction.OnPeriodicityUpdate -> onPeriodicityUpdate(reminderEditorAction.periodicity)
             ReminderEditorAction.OnHandleTimeValidationStatus -> onHandleTimeValidationStatus()
-            ReminderEditorAction.OnPeriodicityDismiss -> onPeriodicityDismiss()
+            ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate -> onPeriodicityDropdownMenuVisibilityUpdate()
             ReminderEditorAction.OnUpsertReminder -> onUpsertReminder()
             ReminderEditorAction.OnBackClick -> onBackClick()
         }
@@ -101,7 +101,7 @@ class ReminderEditorViewModel(
         viewModelScope.launch {
             if (id == null) return@launch
 
-            reminderEditorRepository.getReminderById(id = id)
+            reminderEditorRepository.getReminderById(id = id!!)
                 .onSuccess { reminder ->
                     reminder?.let { notNullReminder ->
                         val is24HourFormat = timeFormatter.is24HourFormat.first()
@@ -153,14 +153,13 @@ class ReminderEditorViewModel(
         savedStateHandle.updateState { copy(pickerDialog = pickerDialog) }
     }
 
-    private fun onPeriodicityDismiss() {
+    private fun onPeriodicityDropdownMenuVisibilityUpdate() {
         savedStateHandle.updateState { copy(isPeriodicityDropdownMenuExpanded = !isPeriodicityDropdownMenuExpanded) }
     }
 
     private fun onUpsertReminder() {
         viewModelScope.launch {
-            val upsertResult = reminderEditorRepository.upsertReminder(getReminder())
-            upsertResult
+            reminderEditorRepository.upsertReminder(getReminder())
                 .onError { error ->
                     sendErrorToChannel(error = error)
                 }

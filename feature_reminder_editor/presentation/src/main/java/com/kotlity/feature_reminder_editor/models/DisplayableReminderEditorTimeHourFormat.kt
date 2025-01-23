@@ -1,9 +1,10 @@
 package com.kotlity.feature_reminder_editor.models
 
-import kotlinx.serialization.Serializable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-@Serializable
+@Parcelize
 data class DisplayableReminderEditorTimeHourFormat(
     val value: String? = null,
     val hourFormat: HourFormat? = null,
-)
+): Parcelable

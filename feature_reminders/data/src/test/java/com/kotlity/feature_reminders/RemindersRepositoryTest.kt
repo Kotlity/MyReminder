@@ -16,21 +16,16 @@ import com.kotlity.core.util.ReminderError
 import com.kotlity.core.util.Result
 import com.kotlity.di.testDispatcherHandlerModule
 import com.kotlity.utils.KoinDependencyProvider
+import com.kotlity.utils.TestRuleProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit4.MockKRule
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.koin.test.inject
 
@@ -55,10 +50,9 @@ private val mockReminderEntities = listOf(
     )
 )
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class RemindersRepositoryTest: KoinDependencyProvider(modules = listOf(testDispatcherHandlerModule)) {
+class RemindersRepositoryTest: KoinDependencyProvider(modules = listOf(testDispatcherHandlerModule)), TestRuleProvider {
 
-    @MockK(relaxUnitFun = true)
+    @RelaxedMockK
     private lateinit var reminderDao: ReminderDao
 
     @MockK
@@ -67,18 +61,9 @@ class RemindersRepositoryTest: KoinDependencyProvider(modules = listOf(testDispa
     private val dispatcherHandler by inject<DispatcherHandler>()
     private lateinit var remindersRepository: RemindersRepository
 
-    @get:Rule
-    val mockKRule = MockKRule(this)
-
     @Before
     fun setup() {
-        Dispatchers.setMain(dispatcherHandler.io)
         remindersRepository = RemindersRepositoryImplementation(reminderDao, scheduler, dispatcherHandler)
-    }
-
-    @After
-    fun teardown() {
-        Dispatchers.resetMain()
     }
 
     @Test

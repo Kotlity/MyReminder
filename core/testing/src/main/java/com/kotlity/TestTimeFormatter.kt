@@ -8,8 +8,7 @@ class TestTimeFormatter: TimeFormatter {
 
     private val _is24HourFormat: MutableStateFlow<Boolean> = MutableStateFlow(true)
 
-    override val is24HourFormat: Flow<Boolean>
-        get() = _is24HourFormat
+    override val is24HourFormat: Flow<Boolean> = _is24HourFormat
 
     override fun is24HourFormatChanged(update: Boolean) {
         _is24HourFormat.update { update }

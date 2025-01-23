@@ -41,7 +41,7 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
     fun `initial state of reminders is Result dot Success with no data`() = runTest {
         val expectedResult = Result.Success<List<Reminder>>(data = emptyList())
 
-        val result = myTestScheduler.getReminders().first()
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(expectedResult)
         assertThat(result.getData).isEmpty()
     }
@@ -51,15 +51,18 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
 
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
         val addingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToAdd)
         assertThat(addingResult).isEqualTo(Result.Success(data = Unit))
 
-        val finalResult = myTestScheduler.getReminders().first().getData
+        val finalResult = myTestScheduler.retrieveReminderState().first().getData
         assertThat(finalResult).contains(mockReminderToAdd)
 
         val lastElement = finalResult.last()
@@ -70,15 +73,18 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
     fun `updating reminder successfully returns Result dot Success`() = runTest {
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
         val updatingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToUpdate)
         assertThat(updatingResult).isEqualTo(Result.Success(data = Unit))
 
-        val finalResult = myTestScheduler.getReminders().first().getData
+        val finalResult = myTestScheduler.retrieveReminderState().first().getData
         assertThat(finalResult).contains(mockReminderToUpdate)
 
         val updatedMockReminderIndex = finalResult.indexOf(mockReminderToUpdate)
@@ -91,15 +97,18 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val mockCancellingReminder = mockReminders[4]
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
         val cancellingResult = myTestScheduler.cancelReminder(id = mockCancellingReminder.id)
         assertThat(cancellingResult).isEqualTo(Result.Success(data = Unit))
 
-        val finalResult = myTestScheduler.getReminders().first().getData
+        val finalResult = myTestScheduler.retrieveReminderState().first().getData
         assertThat(finalResult).doesNotContain(mockCancellingReminder)
     }
 
@@ -108,17 +117,23 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val addingExpectedResult = Result.Error(error = AlarmError.SECURITY)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
-        myTestScheduler.updateRemindersState(result = addingExpectedResult)
+        myTestScheduler.apply {
+            updateError(error = addingExpectedResult.error)
+            updateReminderState(result = addingExpectedResult)
+        }
 
         val addingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToAdd)
         assertThat(addingResult).isEqualTo(addingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(addingExpectedResult)
     }
 
@@ -128,17 +143,23 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val addingExpectedResult = Result.Error(error = AlarmError.ILLEGAL_ARGUMENT)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
-        myTestScheduler.updateRemindersState(result = addingExpectedResult)
+        myTestScheduler.apply {
+            updateError(error = addingExpectedResult.error)
+            updateReminderState(result = addingExpectedResult)
+        }
 
         val addingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToAdd)
         assertThat(addingResult).isEqualTo(addingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(addingExpectedResult)
     }
 
@@ -147,17 +168,23 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val updatingExpectedResult = Result.Error(error = AlarmError.SECURITY)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
-        myTestScheduler.updateRemindersState(result = updatingExpectedResult)
+        myTestScheduler.apply {
+            updateError(error = updatingExpectedResult.error)
+            updateReminderState(result = updatingExpectedResult)
+        }
 
         val updatingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToUpdate)
         assertThat(updatingResult).isEqualTo(updatingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(updatingExpectedResult)
     }
 
@@ -166,17 +193,23 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val updatingExpectedResult = Result.Error(error = AlarmError.CANCELED)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
-        myTestScheduler.updateRemindersState(result = updatingExpectedResult)
+        myTestScheduler.apply {
+            updateError(error = updatingExpectedResult.error)
+            updateReminderState(result = updatingExpectedResult)
+        }
 
         val updatingResult = myTestScheduler.addOrUpdateReminder(reminder = mockReminderToUpdate)
         assertThat(updatingResult).isEqualTo(updatingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(updatingExpectedResult)
     }
 
@@ -185,15 +218,18 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val cancellingExpectedResult = Result.Error(error = AlarmError.ILLEGAL_ARGUMENT)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
         val cancellingResult = myTestScheduler.cancelReminder(id = mockReminders.last().id + 1)
         assertThat(cancellingResult).isEqualTo(cancellingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(cancellingExpectedResult)
     }
 
@@ -202,17 +238,23 @@ class SchedulerTest: KoinDependencyProvider(modules = listOf(testSchedulerModule
         val cancellingExpectedResult = Result.Error(error = AlarmError.UNKNOWN)
         val setRemindersExpectedResult = Result.Success(data = mockReminders)
 
-        myTestScheduler.setReminders(reminders = mockReminders)
-        val result = myTestScheduler.getReminders().first()
+        myTestScheduler.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+        val result = myTestScheduler.retrieveReminderState().first()
         assertThat(result).isEqualTo(setRemindersExpectedResult)
         assertThat(result.getData).isEqualTo(mockReminders)
 
-        myTestScheduler.updateRemindersState(result = cancellingExpectedResult)
+        myTestScheduler.apply {
+            updateError(error = cancellingExpectedResult.error)
+            updateReminderState(result = cancellingExpectedResult)
+        }
 
         val cancellingResult = myTestScheduler.cancelReminder(id = mockReminderToUpdate.id)
         assertThat(cancellingResult).isEqualTo(cancellingExpectedResult)
 
-        val finalResult = myTestScheduler.getReminders().first()
+        val finalResult = myTestScheduler.retrieveReminderState().first()
         assertThat(finalResult).isEqualTo(cancellingExpectedResult)
     }
 }

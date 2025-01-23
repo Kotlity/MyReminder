@@ -1,11 +1,12 @@
 package com.kotlity.feature_reminder_editor.models
 
-import kotlinx.serialization.Serializable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-@Serializable
+@Parcelize
 data class DisplayableReminderEditorDate(
     val value: Long? = null,
     val day: String? = null,
     val month: String? = null,
     val year: String? = null
-)
+): Parcelable

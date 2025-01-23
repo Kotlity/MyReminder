@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -12,7 +13,7 @@ android {
     defaultConfig {
         minSdk = 24
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.kotlity.InstrumentationTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -63,7 +64,7 @@ dependencies {
 
     debugImplementation(libs.bundles.compose.debug)
 
-    testImplementation(project(":core:testing"))
+    androidTestImplementation(project(":core:testing"))
 
     testImplementation(libs.bundles.test)
     testImplementation(libs.threeTenabp)

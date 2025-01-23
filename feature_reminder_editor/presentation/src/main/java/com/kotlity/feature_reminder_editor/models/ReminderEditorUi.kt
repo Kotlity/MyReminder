@@ -1,9 +1,10 @@
 package com.kotlity.feature_reminder_editor.models
 
+import android.os.Parcelable
 import com.kotlity.core.Periodicity
-import kotlinx.serialization.Serializable
+import kotlinx.parcelize.Parcelize
 
-@Serializable
+@Parcelize
 data class ReminderEditorUi(
     val id: Long? = null,
     val title: String? = null,
@@ -11,4 +12,4 @@ data class ReminderEditorUi(
     val reminderEditorTime: DisplayableReminderEditorTime = DisplayableReminderEditorTime(),
     val reminderEditorDate: DisplayableReminderEditorDate = DisplayableReminderEditorDate(),
     val periodicity: Periodicity = Periodicity.ONCE
-)
+): Parcelable
