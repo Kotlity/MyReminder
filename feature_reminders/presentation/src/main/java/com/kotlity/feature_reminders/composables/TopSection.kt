@@ -1,6 +1,5 @@
 package com.kotlity.feature_reminders.composables
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,9 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
+import com.kotlity.core.composables.TopSectionTitle
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.ui.theme.darkBlack
 import com.kotlity.core.util.PreviewAnnotation
@@ -33,8 +29,6 @@ import com.kotlity.core.resources.R
 @Composable
 fun TopSection(
     modifier: Modifier = Modifier,
-    @StringRes titleRes: Int = R.string.app_name,
-    titleStyle: TextStyle = MaterialTheme.typography.headlineLarge,
     isAddTaskLabelVisible: Boolean,
     onAddTaskPositioned: (IntOffset) -> Unit,
     onAddTaskClick: () -> Unit
@@ -45,11 +39,7 @@ fun TopSection(
             .fillMaxWidth()
             .height(dimensionResource(id = R.dimen._46dp))
         ) {
-            Text(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(id = titleRes),
-                style = titleStyle
-            )
+            TopSectionTitle(modifier = Modifier.align(Alignment.Center))
             AddTaskSection(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
