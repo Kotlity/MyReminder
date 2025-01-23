@@ -42,5 +42,6 @@ dependencies {
 
     implementation(libs.bundles.koin)
 
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.test)
 }

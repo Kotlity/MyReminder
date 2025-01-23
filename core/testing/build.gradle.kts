@@ -46,8 +46,6 @@ android {
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
-    implementation(project(":core:alarm:domain"))
-    implementation(project(":core:alarm:data"))
 
     implementation(libs.bundles.android.core)
 

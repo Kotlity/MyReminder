@@ -6,8 +6,8 @@ testCoreKtx= "2.2.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.12.01"
+activityCompose = "1.10.0"
+composeBom = "2025.01.00"
 koin = "3.5.6"
 ksp = "2.0.20-1.0.25"
 room = "2.6.1"
@@ -15,7 +15,7 @@ kotlinxCoroutines = "1.9.0"
 navigationCompose = "2.8.5"
 kotlinxSerialization = "1.7.1"
 truth = "1.4.4"
-mockk = "1.13.4"
+mockk = "1.13.8"
 turbine = "0.7.0"
 runner = "1.6.2"
 threeTenabp = "1.7.0"
@@ -58,6 +58,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationCompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 threeTenabp = { module = "org.threeten:threetenbp", version.ref = "threeTenabp" }
@@ -78,6 +79,7 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 room = { id = "androidx.room", version.ref = "room" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -136,6 +138,7 @@ android-test = [
     "androidx-core-testing",
     "kotlinx-coroutines-test",
     "androidx-room-testing",
+    "androidx-navigation-testing",
     "koin-android-test",
     "truth",
     "mockk-android",
