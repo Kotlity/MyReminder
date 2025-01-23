@@ -36,12 +36,12 @@ dependencies {
     implementation(project(":core:notification:domain"))
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
-    implementation(project(":core:testing"))
     implementation(project(":core:resources"))
 
     implementation(libs.bundles.android.core)
 
     implementation(libs.bundles.koin)
 
+    testImplementation(project(":core:testing"))
     testImplementation(libs.bundles.test)
 }

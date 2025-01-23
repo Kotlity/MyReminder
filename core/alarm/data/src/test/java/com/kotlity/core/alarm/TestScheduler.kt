@@ -3,51 +3,39 @@ package com.kotlity.core.alarm
 import com.kotlity.core.Reminder
 import com.kotlity.core.util.AlarmError
 import com.kotlity.core.util.Result
+import com.kotlity.utils.TestErrorHandler
+import com.kotlity.utils.TestReminderRepositoryWrapper
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 
-class TestScheduler: Scheduler {
+class TestScheduler(initialState: Result<List<Reminder>, AlarmError> = Result.Success(data = emptyList())):
+    TestReminderRepositoryWrapper<List<Reminder>, AlarmError>(initialState = initialState),
+    TestErrorHandler<AlarmError>,
+    Scheduler {
 
-    private val reminders = mutableListOf<Reminder>()
-
-    private var remindersState: MutableStateFlow<Result<List<Reminder>, AlarmError>> = MutableStateFlow(Result.Success(data = reminders))
-
-    fun setReminders(reminders: List<Reminder>) {
-        this.reminders.addAll(reminders)
-        updateRemindersState(result = Result.Success(data = this.reminders))
-    }
-
-    fun updateRemindersState(result: Result<List<Reminder>, AlarmError>) {
-        remindersState.update { result }
-    }
-
-    fun getReminders(): Flow<Result<List<Reminder>, AlarmError>> {
-        return remindersState
-    }
+    override var error: AlarmError? = null
 
     override fun addOrUpdateReminder(reminder: Reminder): Result<Unit, AlarmError> {
-        if (remindersState.value.isError) return Result.Error(error = remindersState.value.getError)
+        return handleError {
+            val isExistingReminderIndex = reminders.indexOfFirst { it.id == reminder.id }
+            if (isExistingReminderIndex != -1) reminders[isExistingReminderIndex] = reminder
+            else reminders.add(reminder)
 
-        val isExistingReminderIndex = reminders.indexOfFirst { it.id == reminder.id }
-        if (isExistingReminderIndex != -1) reminders[isExistingReminderIndex] = reminder
-        else reminders.add(reminder)
-
-        updateRemindersState(result = Result.Success(data = reminders))
-        return Result.Success(data = Unit)
+            updateReminderState(result = Result.Success(data = reminders))
+            Result.Success(data = Unit)
+        }
     }
 
     override fun cancelReminder(id: Long): Result<Unit, AlarmError> {
-        if (remindersState.value.isError) return Result.Error(error = remindersState.value.getError)
-
-        val isExistingReminderIndex = reminders.indexOfFirst { it.id == id }
-        return if (isExistingReminderIndex != -1) {
-            reminders.removeAt(isExistingReminderIndex)
-            updateRemindersState(result = Result.Success(data = reminders))
-            Result.Success(data = Unit)
-        } else {
-            updateRemindersState(result = Result.Error(error = AlarmError.ILLEGAL_ARGUMENT))
-            Result.Error(error = AlarmError.ILLEGAL_ARGUMENT)
+        return handleError {
+            val isExistingReminderIndex = reminders.indexOfFirst { it.id == id }
+            if (isExistingReminderIndex != -1) {
+                reminders.removeAt(isExistingReminderIndex)
+                updateReminderState(result = Result.Success(data = reminders))
+                Result.Success(data = Unit)
+            } else {
+                updateReminderState(result = Result.Error(error = AlarmError.ILLEGAL_ARGUMENT))
+                Result.Error(error = AlarmError.ILLEGAL_ARGUMENT)
+            }
         }
     }
 }

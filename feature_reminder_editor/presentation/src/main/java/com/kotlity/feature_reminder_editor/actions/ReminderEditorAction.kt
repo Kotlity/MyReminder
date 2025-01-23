@@ -12,7 +12,7 @@ sealed interface ReminderEditorAction {
     data class OnPickerDialogVisibilityUpdate(val pickerDialog: PickerDialog?): ReminderEditorAction
     data class OnPeriodicityUpdate(val periodicity: Periodicity): ReminderEditorAction
     data object OnHandleTimeValidationStatus: ReminderEditorAction
-    data object OnPeriodicityDismiss: ReminderEditorAction
+    data object OnPeriodicityDropdownMenuVisibilityUpdate: ReminderEditorAction
     data object OnUpsertReminder: ReminderEditorAction
     data object OnBackClick: ReminderEditorAction
 }

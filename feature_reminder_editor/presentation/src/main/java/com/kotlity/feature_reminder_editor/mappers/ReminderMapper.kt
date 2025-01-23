@@ -7,7 +7,8 @@ fun Reminder.toReminderEditorUi(is24HourFormat: Boolean = true): ReminderEditorU
     return ReminderEditorUi(
         id = id,
         title = title,
-        reminderEditorTime = reminderTime.toDisplayableReminderEditorTime(),
+        is24HourFormat = is24HourFormat,
+        reminderEditorTime = reminderTime.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat),
         reminderEditorDate = reminderTime.toDisplayableReminderEditorDate(),
         periodicity = periodicity
     )

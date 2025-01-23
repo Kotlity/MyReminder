@@ -12,7 +12,7 @@ import com.kotlity.di.db.testReminderDaoModule
 import com.kotlity.di.db.testReminderDatabaseModule
 import com.kotlity.di.testDispatcherHandlerModule
 import com.kotlity.utils.AndroidKoinDependencyProvider
-import com.kotlity.utils.MainDispatcherRule
+import com.kotlity.utils.TestRuleProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -27,7 +27,7 @@ class ReminderDaoTest: AndroidKoinDependencyProvider(
         testReminderDaoModule,
         testDispatcherHandlerModule
     )
-) {
+), TestRuleProvider {
 
     private val reminderDatabase by inject<ReminderDatabase>()
     private val reminderDao by inject<ReminderDao>()
@@ -40,10 +40,7 @@ class ReminderDaoTest: AndroidKoinDependencyProvider(
         }
     }
 
-    @get:Rule(order = 1)
-    val mainDispatcherRule = MainDispatcherRule()
-
-    @get:Rule(order = 2)
+    @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @Test
