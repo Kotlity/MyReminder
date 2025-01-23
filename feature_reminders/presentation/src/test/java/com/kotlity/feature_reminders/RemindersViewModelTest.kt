@@ -2,6 +2,7 @@ package com.kotlity.feature_reminders
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.kotlity.TimeFormatter
 import com.kotlity.core.Periodicity
 import com.kotlity.core.Reminder
 import com.kotlity.core.util.AlarmError
@@ -9,16 +10,19 @@ import com.kotlity.core.util.DatabaseError
 import com.kotlity.core.util.ReminderError
 import com.kotlity.core.util.Result
 import com.kotlity.core.util.Event
+import com.kotlity.di.testTimeFormatterModule
 import com.kotlity.feature_reminders.actions.RemindersAction
 import com.kotlity.feature_reminders.di.testRemindersRepositoryModule
 import com.kotlity.feature_reminders.events.ReminderOneTimeEvent
 import com.kotlity.feature_reminders.mappers.toReminderUi
 import com.kotlity.feature_reminders.states.SelectedReminderState
 import com.kotlity.utils.KoinDependencyProvider
-import com.kotlity.utils.MainDispatcherRule
+import com.kotlity.utils.TestRuleProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -42,16 +46,25 @@ private val mockSelectedReminderState = SelectedReminderState(id = 1, position =
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemindersRepositoryModule)), TestRuleProvider {
+class RemindersViewModelTest: KoinDependencyProvider(
+    modules = listOf(
+        testRemindersRepositoryModule,
+        testTimeFormatterModule
+    )
+), TestRuleProvider {
 
     override val coroutineDispatcher: CoroutineDispatcher = UnconfinedTestDispatcher()
 
     private val testRemindersRepository by inject<TestRemindersRepository>()
+    private val testTimeFormatter by inject<TimeFormatter>()
     private lateinit var remindersViewModel: RemindersViewModel
 
     @Before
     fun setup() {
-        remindersViewModel = RemindersViewModel(testRemindersRepository)
+        remindersViewModel = RemindersViewModel(
+            remindersRepository = testRemindersRepository,
+            timeFormatter = testTimeFormatter
+        )
     }
 
     @Test
@@ -67,7 +80,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
 
     @Test
     fun `onLoadReminders returns reminders`() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(reminders = mockReminders)
@@ -78,12 +91,44 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
         assertThat(remindersState.isLoading).isFalse()
         assertThat(remindersState.reminders).isEqualTo(mockReminders.map { it.toReminderUi() })
     }
+    
+    @Test
+    fun `after loaded reminders, change is24HourFormat to false updated reminderTime`() = runTest {
+        val is24HourFormatValues = mutableListOf<Boolean>()
+        val initialLoadedReminders = mockReminders.map { it.toReminderUi(is24HourFormat = true) }
+        val finalReminders = mockReminders.map { it.toReminderUi(is24HourFormat = false) }
+
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { testTimeFormatter.is24HourFormat.toList(is24HourFormatValues) }
+
+        val initialIs24HourFormat = is24HourFormatValues[0]
+        assertThat(initialIs24HourFormat).isTrue()
+
+        testRemindersRepository.apply {
+            setReminders(reminders = mockReminders)
+            updateReminderState(result = Result.Success(data = mockReminders))
+        }
+
+        val initialReminderState = remindersViewModel.state.value
+        assertThat(initialReminderState.isLoading).isFalse()
+        assertThat(initialReminderState.reminders).isEqualTo(initialLoadedReminders)
+
+        testTimeFormatter.is24HourFormatChanged(update = false)
+
+        val updatedReminderState = remindersViewModel.state.value
+        assertThat(updatedReminderState.reminders).isNotEqualTo(initialLoadedReminders)
+        assertThat(updatedReminderState.reminders).isEqualTo(finalReminders)
+
+        val remindersContainsAmOrPmInTime = updatedReminderState.reminders.all { reminder -> reminder.reminderTime.time.contains("AM") || reminder.reminderTime.time.contains("PM") }
+        assertThat(remindersContainsAmOrPmInTime).isTrue()
+
+    }
 
     @Test
     fun `onLoadReminders returns DatabaseError dot SQLiteException and send it to the eventChannel`() = runTest {
         val mockError = ReminderError.Database(DatabaseError.SQLITE_EXCEPTION)
 
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             updateError(error = mockError)
@@ -101,7 +146,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
     fun `onReminderDelete returns successful result and send ReminderOneTimeEvent dot Delete to the eventChannel`() = runTest {
         val updatedMockReminders = mockReminders.toMutableList().apply { removeIf { it == mockReminderToDelete } }
 
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(reminders = mockReminders)
@@ -121,7 +166,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
     fun `onReminderDelete returns DatabaseError dot IllegalArgument and send it to the eventChannel`() = runTest {
         val mockError = ReminderError.Database(error = DatabaseError.ILLEGAL_ARGUMENT)
 
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(reminders = mockReminders)
@@ -142,7 +187,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
     fun `onReminderDelete returns AlarmError dot Security and send it to the eventChannel`() = runTest {
         val mockError = ReminderError.Alarm(error = AlarmError.SECURITY)
 
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(reminders = mockReminders)
@@ -163,7 +208,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
     fun `successfully deletion of several reminders`() = runTest {
         val mockRemindersToDelete = mockReminders.filter { it.id.toInt() == 1 || it.id.toInt() == 2 || it.id.toInt() == 4 }
 
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(mockReminders)
@@ -178,7 +223,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
 
     @Test
     fun `successfully restoration of the recently deleted reminder`() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         testRemindersRepository.apply {
             setReminders(mockReminders)
@@ -198,7 +243,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
 
     @Test
     fun `onReminderRestore returns DatabaseError dot Unknown and send it to the eventChannel`() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         val mockReminderError = ReminderError.Database(error = DatabaseError.UNKNOWN)
 
@@ -256,7 +301,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
 
     @Test
     fun `onReminderUnselect sets selectedReminderId and x and y coordinates to null`() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         assertThat(remindersViewModel.state.value.selectedReminderState).isEqualTo(SelectedReminderState())
 
@@ -276,7 +321,7 @@ class RemindersViewModelTest: KoinDependencyProvider(modules = listOf(testRemind
 
     @Test
     fun `onReminderSelect updates selectedReminderState after that onReminderEdit sends ReminderOneTimeEvent dot Edit with passed id and sets selectedReminderState to the initial value`() = runTest {
-        backgroundScope.launch(UnconfinedTestDispatcher()) { remindersViewModel.state.collect() }
+        backgroundScope.launch(coroutineDispatcher) { remindersViewModel.state.collect() }
 
         val initialState = remindersViewModel.state.value
         assertThat(initialState.reminders).isEmpty()
