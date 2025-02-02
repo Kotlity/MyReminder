@@ -8,7 +8,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.kotlity.core.ResourcesConstant._14sp
 import com.kotlity.core.ResourcesConstant._15sp
 import com.kotlity.core.ResourcesConstant._16sp
-import com.kotlity.core.ResourcesConstant._19sp
+import com.kotlity.core.ResourcesConstant._18sp
+import com.kotlity.core.ResourcesConstant._20sp
 import com.kotlity.core.ResourcesConstant._24sp
 import com.kotlity.core.ResourcesConstant._26sp
 import com.kotlity.core.ResourcesConstant._30sp
@@ -70,18 +71,18 @@ val Typography = Typography(
     ),
     displayLarge = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = _19sp,
+        fontSize = _20sp,
         fontWeight = FontWeight.Bold,
         color = white
     ),
     displayMedium = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = _16sp,
+        fontSize = _20sp,
         color = black
     ),
     displaySmall = TextStyle(
         fontFamily = AlteHassGrotesk,
-        fontSize = _15sp,
+        fontSize = _18sp,
         color = halfGrey
     )
 

@@ -19,7 +19,7 @@ fun PermissionDialog(
     @StringRes okText: Int = string.ok,
     @StringRes dismissText: Int = string.dismiss,
     @StringRes grantPermissionText: Int = string.grantPermission,
-    @StringRes titleText: Int = string.title,
+    @StringRes titleText: Int = string.permissionTitle,
     onDismissClick: () -> Unit,
     onOkClick: () -> Unit,
     onGoToAppSettingsClick: () -> Unit

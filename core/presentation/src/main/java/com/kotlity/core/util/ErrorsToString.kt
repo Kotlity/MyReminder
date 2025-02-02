@@ -47,7 +47,14 @@ fun AlarmValidationError.AlarmTitleValidation.toString(context: Context): String
 
 fun AlarmValidationError.AlarmReminderTimeValidation.toString(context: Context): String {
     val resId = when(this) {
-        AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE -> R.string.reminderTimePastTense
+        AlarmValidationError.AlarmReminderTimeValidation.PAST_TIME -> R.string.reminderTimePastTense
+    }
+    return context.getString(resId)
+}
+
+fun AlarmValidationError.AlarmReminderDateValidation.toString(context: Context): String {
+    val resId = when(this) {
+        AlarmValidationError.AlarmReminderDateValidation.ONLY_WEEKDAYS_ALLOWED -> R.string.reminderDateWrongPeriodicity
     }
     return context.getString(resId)
 }

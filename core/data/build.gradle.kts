@@ -50,6 +50,8 @@ dependencies {
 
     implementation(libs.bundles.coroutines)
 
+    implementation(libs.threeTenabp)
+
     implementation(libs.bundles.koin)
 
     implementation(libs.bundles.room)
