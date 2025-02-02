@@ -53,6 +53,8 @@ dependencies {
 
     implementation(libs.bundles.koin)
 
+    implementation(libs.threeTenabp)
+
     implementation(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
 

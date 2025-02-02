@@ -10,11 +10,17 @@ sealed interface AlarmValidationError: ValidationError {
     }
 
     enum class AlarmReminderTimeValidation: AlarmValidationError {
-        PAST_TENSE
+        PAST_TIME
+    }
+
+    enum class AlarmReminderDateValidation: AlarmValidationError {
+        ONLY_WEEKDAYS_ALLOWED
     }
 
     fun isAlarmTitleValidation() = this is AlarmTitleValidation
 
     fun isAlarmTimeValidation() = this is AlarmReminderTimeValidation
+
+    fun isAlarmDateValidation() = this is AlarmReminderDateValidation
 
 }

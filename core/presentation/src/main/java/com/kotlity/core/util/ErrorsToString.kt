@@ -1,6 +1,10 @@
 package com.kotlity.core.util
 
 import android.content.Context
+import com.kotlity.core.util.AlarmError
+import com.kotlity.core.util.AlarmValidationError
+import com.kotlity.core.util.DatabaseError
+import com.kotlity.core.util.ReminderError
 import com.kotlity.core.resources.R
 
 private fun DatabaseError.toString(context: Context): String {
@@ -43,7 +47,14 @@ fun AlarmValidationError.AlarmTitleValidation.toString(context: Context): String
 
 fun AlarmValidationError.AlarmReminderTimeValidation.toString(context: Context): String {
     val resId = when(this) {
-        AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE -> R.string.reminderTimePastTense
+        AlarmValidationError.AlarmReminderTimeValidation.PAST_TIME -> R.string.reminderTimePastTense
+    }
+    return context.getString(resId)
+}
+
+fun AlarmValidationError.AlarmReminderDateValidation.toString(context: Context): String {
+    val resId = when(this) {
+        AlarmValidationError.AlarmReminderDateValidation.ONLY_WEEKDAYS_ALLOWED -> R.string.reminderDateWrongPeriodicity
     }
     return context.getString(resId)
 }

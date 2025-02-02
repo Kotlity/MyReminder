@@ -17,14 +17,17 @@
     <string name="time">Time</string>
     <string name="timeHoursAndMinutesHint">00</string>
     <string name="calendar">Calendar</string>
+    <string name="timeHint">00</string>
     <string name="dayHint">dd</string>
     <string name="monthHint">mm</string>
     <string name="yearHint">yyyy</string>
+    <string name="timeDateDivider">:</string>
     <string name="repeat">Repeat</string>
     <string name="once">Once</string>
     <string name="daily">Daily</string>
     <string name="monToFri">Mon to Fri</string>
-
+    <string name="selectTimeTitle">Select time</string>
+    <string name="enterTimeTitle">Enter time</string>
 
     <string name="unknownException">Something went wrong. Please try again later.</string>
 
@@ -48,7 +51,8 @@
     <string name="titleStartsWithADigit">Title cannot starts with a digit !</string>
     <string name="titleIsTooLong">Title is too long !</string>
 
-    <string name="reminderTimePastTense">You cannot choose the past tense ! Please choose the future !</string>
+    <string name="reminderTimePastTense">You cannot choose the past tense !</string>
+    <string name="reminderDateWrongPeriodicity">Available on weekdays only !</string>
 
     <string name="notificationChannelId" translatable="false">my_reminder_channel_id</string>
     <string name="notificationChannelName" translatable="false">MyReminder</string>
@@ -70,8 +74,17 @@
     <string name="loadingIndicatorLabel">Loading indicator label</string>
     <string name="loadingIndicatorColorLabel">Loading wheel color label</string>
     <string name="loadingIndicatorHeightLabel">Loading wheel height label</string>
+    <string name="backIconButtonDescription">Back</string>
+    <string name="doneIconButtonDescription">Done</string>
+    <string name="timeIconDescription">Time icon description</string>
+    <string name="dateIconDescription">Date icon description</string>
+    <string name="selectTimeTitleDescription">Select time description</string>
+    <string name="inputTimeTitleDescription">Input time description</string>
+    <string name="periodicityArrowDownDescription">Periodicity arrow down description</string>
+    <string name="periodicityArrowUpDescription">Periodicity arrow up description</string>
 
     <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
     <string name="dismiss">No, thanks</string>
     <string name="grantPermission">Grant permission</string>
     <string name="goToAppSettings">Go to app settings</string>
