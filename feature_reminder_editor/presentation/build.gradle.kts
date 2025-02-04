@@ -50,6 +50,7 @@ dependencies {
     implementation(project(":core:alarm:domain"))
     implementation(project(":core:presentation"))
     implementation(project(":core:resources"))
+    implementation(project(":core:permissions:domain"))
 
     implementation(libs.bundles.android.core)
 

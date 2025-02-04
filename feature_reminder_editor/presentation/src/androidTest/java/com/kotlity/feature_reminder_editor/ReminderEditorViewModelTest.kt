@@ -12,6 +12,7 @@ import com.kotlity.core.Reminder
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.util.AlarmError
 import com.kotlity.core.util.AlarmValidationError
+import com.kotlity.core.util.ClockValidator
 import com.kotlity.core.util.DatabaseError
 import com.kotlity.core.util.Event
 import com.kotlity.core.util.ReminderError
@@ -28,7 +29,9 @@ import com.kotlity.feature_reminder_editor.mappers.toReminderEditorUi
 import com.kotlity.feature_reminder_editor.models.PickerDialog
 import com.kotlity.feature_reminder_editor.models.ReminderEditorUi
 import com.kotlity.feature_reminder_editor.states.ReminderEditorState
+import com.kotlity.permissions.PermissionsManager
 import com.kotlity.utils.AndroidKoinDependencyProvider
+import com.kotlity.utils.DateUtil
 import com.kotlity.utils.TestRuleProvider
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -36,6 +39,7 @@ import io.mockk.verify
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -44,6 +48,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.koin.test.inject
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalTime
+import org.threeten.bp.ZoneOffset
 
 private val mockReminders = (1..10).map { index ->
     Reminder(
@@ -69,10 +77,21 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
     private lateinit var titleValidator: Validator<String, AlarmValidationError.AlarmTitleValidation>
 
     @MockK
-    private lateinit var timeValidator: Validator<Long, AlarmValidationError.AlarmReminderTimeValidation>
+    private lateinit var timeValidator: ClockValidator<Pair<Int, Int>, Long, AlarmValidationError.AlarmReminderTimeValidation>
+
+    @MockK
+    private lateinit var dateValidator: ClockValidator<Periodicity, Long, AlarmValidationError.AlarmReminderDateValidation>
+
+    @MockK
+    private lateinit var permissionsManager: PermissionsManager
 
     private val testReminderEditorRepository by inject<TestReminderEditorRepository>()
     private val testTimeFormatter by inject<TimeFormatter>()
+
+    private val zoneOffset = ZoneOffset.UTC
+
+    private lateinit var localDateTime: LocalDateTime
+    private lateinit var localTime: LocalTime
 
     private lateinit var context: Context
 
@@ -85,13 +104,67 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         context = InstrumentationRegistry.getInstrumentation().targetContext
         val mockId: Long = 3
         savedStateHandle = SavedStateHandle(mapOf("id" to mockId))
+        every { permissionsManager.requiredPermissions } returns emptyList()
+        every { permissionsManager.permissionsToAsk } returns emptyFlow()
+        localDateTime = LocalDateTime.now(zoneOffset).toLocalDate().atStartOfDay()
+        localTime = LocalTime.now(zoneOffset)
+
         reminderEditorViewModel = ReminderEditorViewModel(
             savedStateHandle = savedStateHandle,
+            permissionsManager = permissionsManager,
             reminderEditorRepository = testReminderEditorRepository,
             timeFormatter = testTimeFormatter,
             titleValidator = titleValidator,
-            timeValidator = timeValidator
+            timeValidator = timeValidator,
+            dateValidator = dateValidator
         )
+    }
+
+    private val successValidationStatus = ValidationStatus.Success
+    private val unspecifiedValidationStatus = ValidationStatus.Unspecified
+    private val pastTimeValidationStatus = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TIME)
+    private val onlyWeekdaysAllowedDateValidationStatus = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderDateValidation.ONLY_WEEKDAYS_ALLOWED)
+
+    private fun getLocalDateTimeFromReminderTime(time: Long) = Instant.ofEpochMilli(time).atOffset(zoneOffset).toLocalDateTime()
+
+    private fun onDateUpdate(dateInMillis: Long) {
+        reminderEditorViewModel.apply {
+            onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Date))
+            onAction(ReminderEditorAction.OnDateUpdate(date = dateInMillis))
+            onAction(ReminderEditorAction.OnHandleTimeValidationStatus)
+        }
+    }
+
+    private fun assertInitialTimeDateValidationStatusAndPickerDialog() {
+        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(unspecifiedValidationStatus)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
+        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+    }
+
+    private fun assertionsAfterDateUpdate(
+        dateValidationStatus: ValidationStatus<AlarmValidationError.AlarmReminderDateValidation> = successValidationStatus,
+        timeValidationStatus: ValidationStatus<AlarmValidationError.AlarmReminderTimeValidation> = unspecifiedValidationStatus
+    ) {
+        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.Date)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(dateValidationStatus)
+        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(timeValidationStatus)
+    }
+
+    private fun onClosePickerDialog() {
+        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+    }
+
+    private fun onTimeUpdate(timeResponse: Pair<Int, Int>) {
+        reminderEditorViewModel.apply {
+            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Time.TIME_PICKER))
+            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
+        }
+    }
+
+    private fun assertionsAfterTimeUpdate(timeValidationStatus: ValidationStatus<AlarmValidationError.AlarmReminderTimeValidation> = ValidationStatus.Success) {
+        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.Time.TIME_PICKER)
+        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(timeValidationStatus)
     }
 
     @Test
@@ -189,8 +262,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         savedStateHandle["id"] = null
 
-        every { titleValidator.validate(any()) } returns ValidationStatus.Success
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        every { titleValidator.validate(any()) } returns successValidationStatus
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
@@ -200,7 +273,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         assertThat(initialReminderEditorState.reminderEditor.title).isNull()
 
         reminderEditorViewModel.onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = typedTitle))
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(ValidationStatus.Success)
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(successValidationStatus)
         assertThat(reminderEditorViewModel.reminderEditorState.value.reminderEditor.title).isEqualTo(typedTitle)
         verify(exactly = 1) { titleValidator.validate(any()) }
     }
@@ -213,9 +286,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val updatingReminder = mockReminders.find { it.id == mockId }!!
         val updatingTitle = buildString { append("Updated ${updatingReminder.title}") }
 
-        val expectedValidationStatus = ValidationStatus.Success
-        every { titleValidator.validate(any()) } returns expectedValidationStatus
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        every { titleValidator.validate(any()) } returns successValidationStatus
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
@@ -225,7 +297,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         assertThat(initialReminderEditorStateTitle).isEqualTo(updatingReminder.title)
 
         reminderEditorViewModel.onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = updatingTitle))
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(expectedValidationStatus)
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(successValidationStatus)
         assertThat(reminderEditorViewModel.reminderEditorState.value.reminderEditor.title).isEqualTo(updatingTitle)
         verify(exactly = 1) { titleValidator.validate(any()) }
     }
@@ -238,7 +310,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         val expectedValidationStatus = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_DIGIT)
         every { titleValidator.validate(any()) } returns expectedValidationStatus
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
@@ -263,7 +335,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         val expectedValidationStatus = ValidationStatus.Error(error = AlarmValidationError.AlarmTitleValidation.STARTS_WITH_LOWERCASE)
         every { titleValidator.validate(any()) } returns expectedValidationStatus
-        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.titleValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
@@ -280,42 +352,35 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
     @Test
     fun initial_when_dateValidationStatus_is_successful_successful_time_validation_updates_ReminderEditorState() = runTest {
-        val chosenTimestamp = System.currentTimeMillis() + 3600 * 1000
-        every { timeValidator.validate(chosenTimestamp) } returns ValidationStatus.Success
+        val chosenDateInMillis = localDateTime.toInstant(zoneOffset).toEpochMilli()
+        val timeResponse = Pair(first = localTime.hour, second = localTime.minute)
+        every { dateValidator.validate(any(), chosenDateInMillis) } returns successValidationStatus
+        every { timeValidator.validate(response = timeResponse, value = chosenDateInMillis) } returns successValidationStatus
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.DATE)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Success)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        onDateUpdate(dateInMillis = chosenDateInMillis)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertionsAfterDateUpdate()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Success)
+        onClosePickerDialog()
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate()
+
+        onClosePickerDialog()
 
         val is24HourFormat = testTimeFormatter.is24HourFormat.first()
 
-        val updatedReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
-        verify(exactly = 2) { timeValidator.validate(chosenTimestamp) }
+        verify(exactly = 1) {
+            dateValidator.validate(any(), chosenDateInMillis)
+            timeValidator.validate(timeResponse, chosenDateInMillis)
+        }
     }
 
     @Test
@@ -325,88 +390,70 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         val updatingReminder = mockReminders.find { it.id == mockId }!!
         val updatingReminderTimestamp = updatingReminder.reminderTime
-        val chosenTimestamp = updatingReminderTimestamp + 3600 * 1000
-        every { timeValidator.validate(chosenTimestamp) } returns ValidationStatus.Success
+        localDateTime = getLocalDateTimeFromReminderTime(time = updatingReminderTimestamp).plusHours(1)
+        val dateInMillis = localDateTime.toInstant(zoneOffset).toEpochMilli()
+        val timeResponse = Pair(first = localDateTime.hour, second = localDateTime.minute)
+        every { dateValidator.validate(any(), dateInMillis) } returns successValidationStatus
+        every { timeValidator.validate(response = any(), value = any()) } returns successValidationStatus
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.DATE)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Success)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        onDateUpdate(dateInMillis = dateInMillis)
+        assertionsAfterDateUpdate(timeValidationStatus = successValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Success)
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate()
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
         val is24HourFormat = testTimeFormatter.is24HourFormat.first()
 
-        val updatedReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
-        assertThat(currentReminderEditorTime.value).isGreaterThan(updatingReminderTimestamp)
+        assertThat(dateInMillis).isGreaterThan(updatingReminderTimestamp)
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
-        verify(exactly = 2) { timeValidator.validate(chosenTimestamp) }
+        verify(exactly = 1) { dateValidator.validate(any(), dateInMillis) }
+        verify(exactly = 2) { timeValidator.validate(any(), any()) }
     }
 
     @Test
     fun initial_when_dateValidationStatus_is_successful_error_time_validation_updates_ReminderEditorState() = runTest {
-        val chosenTimestampDate = System.currentTimeMillis() + 3600 * 1000
-        val chosenTimestampTime = System.currentTimeMillis() - 3600 * 1000
+        val chosenDateInMillis = localDateTime.toInstant(zoneOffset).toEpochMilli()
+        val updatedLocalTime = localTime.minusHours(1)
+        val timeResponse = Pair(first = updatedLocalTime.hour, second = updatedLocalTime.minute)
 
-        val expectedValidationStatusTime = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
-        every { timeValidator.validate(any()) } returnsMany listOf(ValidationStatus.Success, expectedValidationStatusTime)
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns pastTimeValidationStatus
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.DATE)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Success)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        onDateUpdate(dateInMillis = chosenDateInMillis)
+        assertionsAfterDateUpdate()
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestampTime))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(expectedValidationStatusTime)
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate(timeValidationStatus = pastTimeValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
         val is24HourFormat = testTimeFormatter.is24HourFormat.first()
 
-        val updatedReminderEditorTime = chosenTimestampTime.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
-        verify(exactly = 2) { timeValidator.validate(any()) }
+        verify(exactly = 1) {
+            dateValidator.validate(any(), any())
+            timeValidator.validate(any(), any())
+        }
     }
 
     @Test
@@ -416,72 +463,56 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         val updatingReminder = mockReminders.find { it.id == mockId }!!
         val updatingReminderTimestamp = updatingReminder.reminderTime
-        val chosenTimestampDate = updatingReminderTimestamp + 3600 * 1000
-        val chosenTimestampTime = System.currentTimeMillis() - 3600 * 1000
+        localDateTime = getLocalDateTimeFromReminderTime(time = updatingReminderTimestamp)
+        val dateInMillis = localDateTime.toInstant(zoneOffset).toEpochMilli()
+        val updatedLocalDateTime = localDateTime.minusHours(1)
+        val timeResponse = Pair(first = updatedLocalDateTime.hour, second = updatedLocalDateTime.minute)
+        val updatedTimestamp = updatedLocalDateTime.toInstant(zoneOffset).toEpochMilli()
 
-        val expectedValidationStatusTime = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
-        every { timeValidator.validate(any()) } returnsMany listOf(ValidationStatus.Success, expectedValidationStatusTime)
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returnsMany listOf(successValidationStatus, pastTimeValidationStatus)
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.DATE)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Success)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        onDateUpdate(dateInMillis = dateInMillis)
+        assertionsAfterDateUpdate(timeValidationStatus = successValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestampTime))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(expectedValidationStatusTime)
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate(timeValidationStatus = pastTimeValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
         val is24HourFormat = testTimeFormatter.is24HourFormat.first()
 
-        val updatedReminderEditorTime = chosenTimestampTime.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
-        assertThat(currentReminderEditorTime.value).isLessThan(updatingReminderTimestamp)
+        assertThat(updatedTimestamp).isLessThan(updatingReminderTimestamp)
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
-        verify(exactly = 2) { timeValidator.validate(any()) }
+        verify(exactly = 1) { dateValidator.validate(any(), any()) }
+        verify(exactly = 2) { timeValidator.validate(any(), any()) }
     }
 
     @Test
     fun initial_chosen_time_updates_ReminderEditorState() = runTest {
-        val chosenTimestamp = System.currentTimeMillis()
-        val unspecifiedValidationStatus = ValidationStatus.Unspecified
+        val timeResponse = Pair(first = localTime.hour, second = localTime.minute)
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate(timeValidationStatus = unspecifiedValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
         val is24HourFormat = testTimeFormatter.is24HourFormat.first()
 
-        val updatedReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
         assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
@@ -489,29 +520,22 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
     @Test
     fun initial_chosen_time_after_changed_is24HourFormat_changes_timeHourFormat() = runTest {
-        val chosenTimestamp = System.currentTimeMillis()
-        val unspecifiedValidationStatus = ValidationStatus.Unspecified
+        val timeResponse = Pair(first = localTime.hour, second = localTime.minute)
         val is24HourFormatUpdates = mutableListOf<Boolean>()
         backgroundScope.launch(coroutineDispatcher) { testTimeFormatter.is24HourFormat.toList(is24HourFormatUpdates) }
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate(timeValidationStatus = unspecifiedValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onClosePickerDialog()
 
         val is24HourFormat = is24HourFormatUpdates[0]
         assertThat(is24HourFormat).isTrue()
 
-        val updatedReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         val hourFormat = currentReminderEditorTime.hourFormat.hourFormat
         assertThat(hourFormat).isNull()
@@ -522,7 +546,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val updatedIs24HourFormat = is24HourFormatUpdates[1]
         assertThat(updatedIs24HourFormat).isFalse()
 
-        val finalReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = updatedIs24HourFormat)
+        val finalReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = updatedIs24HourFormat)
         val updatedCurrentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         val updatedHourFormat = updatedCurrentReminderEditorTime.hourFormat.hourFormat
         assertThat(updatedHourFormat).isNotNull()
@@ -536,9 +560,17 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         savedStateHandle["id"] = mockId
 
         val updatingReminder = mockReminders.find { it.id == mockId }!!
+        val updatingReminderTimestamp = updatingReminder.reminderTime
 
-        val chosenTimestamp = updatingReminder.reminderTime - 3600 * 1000
-        val unspecifiedValidationStatus = ValidationStatus.Unspecified
+        localDateTime = getLocalDateTimeFromReminderTime(time = updatingReminderTimestamp)
+        val dateInMillis = localDateTime.toInstant(zoneOffset).toEpochMilli()
+        val updatedLocalDateTime = localDateTime.minusMinutes(30)
+        val timeResponse = Pair(first = updatedLocalDateTime.hour, second = updatedLocalDateTime.minute)
+        val updatedTimestamp = updatedLocalDateTime.toInstant(zoneOffset).toEpochMilli()
+
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returnsMany listOf(successValidationStatus, pastTimeValidationStatus)
+
         val is24HourFormatUpdates = mutableListOf<Boolean>()
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
@@ -548,36 +580,33 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         backgroundScope.launch(coroutineDispatcher) { testTimeFormatter.is24HourFormat.toList(is24HourFormatUpdates) }
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
 
-        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        assertInitialTimeDateValidationStatusAndPickerDialog()
 
-        reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.TIME))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = chosenTimestamp))
-        }
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isEqualTo(PickerDialog.TIME)
+        onDateUpdate(dateInMillis = dateInMillis)
+        assertionsAfterDateUpdate(timeValidationStatus = successValidationStatus)
 
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-        assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
+        onTimeUpdate(timeResponse = timeResponse)
+        assertionsAfterTimeUpdate(timeValidationStatus = pastTimeValidationStatus)
+
+        onClosePickerDialog()
 
         val is24HourFormat = is24HourFormatUpdates[0]
         assertThat(is24HourFormat).isFalse()
 
-        val updatedReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
+        val updatedReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = is24HourFormat)
         val currentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         val hourFormat = currentReminderEditorTime.hourFormat.hourFormat
         assertThat(hourFormat).isNotNull()
         assertThat(hourFormat!!.name).isEqualTo(currentReminderEditorTime.hourFormat.value)
-        assertThat(currentReminderEditorTime.value).isLessThan(updatingReminder.reminderTime)
+        assertThat(updatedTimestamp).isLessThan(updatingReminderTimestamp)
         assertThat(currentReminderEditorTime).isEqualTo(updatedReminderEditorTime)
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
 
         testTimeFormatter.is24HourFormatChanged(update = true)
         val updatedIs24HourFormat = is24HourFormatUpdates[1]
         assertThat(updatedIs24HourFormat).isTrue()
 
-        val finalReminderEditorTime = chosenTimestamp.toDisplayableReminderEditorTime(is24HourFormat = updatedIs24HourFormat)
+        val finalReminderEditorTime = timeResponse.toDisplayableReminderEditorTime(is24HourFormat = updatedIs24HourFormat)
         val updatedCurrentReminderEditorTime = reminderEditorViewModel.reminderEditorState.value.reminderEditor.reminderEditorTime
         val updatedHourFormat = updatedCurrentReminderEditorTime.hourFormat.hourFormat
         assertThat(updatedHourFormat).isNull()
@@ -587,32 +616,28 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
     @Test
     fun initial_successful_date_validation_updates_ReminderEditorState() = runTest {
-        val chosenTimestampDate = System.currentTimeMillis() + 3600 * 1000
-        val expectedDateValidationResult = ValidationStatus.Success
-        every { timeValidator.validate(chosenTimestampDate) } returns expectedDateValidationResult
+        val chosenDateInMillis = localDateTime.plusDays(1).toInstant(zoneOffset).toEpochMilli()
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
 
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         reminderEditorViewModel.reminderEditorState.test {
             val initialState = awaitItem()
             assertThat(initialState).isEqualTo(ReminderEditorState())
 
-            reminderEditorViewModel.apply {
-                onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-                onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-            }
+            onDateUpdate(dateInMillis = chosenDateInMillis)
             val updatedReminderEditorState = expectMostRecentItem()
-            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.DATE)
-            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(expectedDateValidationResult)
+            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
+            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
 
             reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 
-            val updatedReminderEditorDate = chosenTimestampDate.toDisplayableReminderEditorDate()
+            val updatedReminderEditorDate = chosenDateInMillis.toDisplayableReminderEditorDate()
             assertThat(currentReminderEditorState.reminderEditor.reminderEditorDate).isEqualTo(updatedReminderEditorDate)
         }
-        verify(exactly = 1) { timeValidator.validate(chosenTimestampDate) }
+        verify(exactly = 1) { dateValidator.validate(any(), any()) }
     }
 
     @Test
@@ -623,13 +648,16 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val updatingReminder = mockReminders.find { it.id == mockId }!!
         val updatingReminderTimestamp = updatingReminder.reminderTime
 
-        val chosenTimestampDate = updatingReminderTimestamp + 3600 * 1000
-        val expectedDateValidationResult = ValidationStatus.Success
-        every { timeValidator.validate(chosenTimestampDate) } returns expectedDateValidationResult
+        localDateTime = getLocalDateTimeFromReminderTime(time = updatingReminderTimestamp)
+        val updatedLocalDateTime = localDateTime.plusWeeks(1)
+        val updatedTimestamp = updatedLocalDateTime.toInstant(zoneOffset).toEpochMilli()
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns successValidationStatus
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
+        assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         reminderEditorViewModel.reminderEditorState.test {
             val is24HourFormat = testTimeFormatter.is24HourFormat.first()
@@ -637,100 +665,101 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
             val initialState = awaitItem()
             assertThat(initialState).isEqualTo(retrievedReminderEditorState)
 
-            reminderEditorViewModel.apply {
-                onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-                onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-            }
+            onDateUpdate(dateInMillis = updatedTimestamp)
             val updatedReminderEditorState = expectMostRecentItem()
-            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.DATE)
-            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(expectedDateValidationResult)
+            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
+            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
+            assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(successValidationStatus)
 
             reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 
-            val updatedReminderEditorDate = chosenTimestampDate.toDisplayableReminderEditorDate()
+            val updatedReminderEditorDate = updatedTimestamp.toDisplayableReminderEditorDate()
             val currentReminderEditorDate = currentReminderEditorState.reminderEditor.reminderEditorDate
             assertThat(currentReminderEditorDate).isNotEqualTo(retrievedReminderEditorState.reminderEditor.reminderEditorDate)
             assertThat(currentReminderEditorDate.value).isGreaterThan(retrievedReminderEditorState.reminderEditor.reminderEditorDate.value)
             assertThat(currentReminderEditorDate).isEqualTo(updatedReminderEditorDate)
         }
-        verify(exactly = 1) { timeValidator.validate(chosenTimestampDate) }
+        verify(exactly = 1) {
+            dateValidator.validate(any(), any())
+            timeValidator.validate(any(), any())
+        }
     }
 
     @Test
     fun initial_error_date_validation_updates_ReminderEditorState() = runTest {
-        val chosenTimestampDate = System.currentTimeMillis() - 3600 * 1000
-        val expectedDateValidationResult = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
-        every { timeValidator.validate(chosenTimestampDate) } returns expectedDateValidationResult
+        val chosenWeekendDateInMillis = DateUtil.findClosestWeekendInMillis()
+        val initialPeriodicity = Periodicity.ONCE
+        val weekdaysPeriodicityResponse = Periodicity.WEEKDAYS
+        every { dateValidator.validate(any(), chosenWeekendDateInMillis) } returnsMany listOf(successValidationStatus, onlyWeekdaysAllowedDateValidationStatus)
 
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         reminderEditorViewModel.reminderEditorState.test {
             val initialState = awaitItem()
             assertThat(initialState).isEqualTo(ReminderEditorState())
 
-            reminderEditorViewModel.apply {
-                onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-                onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-            }
-            val updatedReminderEditorState = expectMostRecentItem()
-            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.DATE)
-            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(expectedDateValidationResult)
+            onDateUpdate(dateInMillis = chosenWeekendDateInMillis)
+            val secondReminderEditorState = expectMostRecentItem()
+            assertThat(secondReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
+            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
 
             reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
-            val currentReminderEditorState = awaitItem()
-            assertThat(currentReminderEditorState.pickerDialog).isNull()
+            val thirdReminderEditorState = awaitItem()
+            assertThat(thirdReminderEditorState.pickerDialog).isNull()
+            assertThat(thirdReminderEditorState.reminderEditor.periodicity).isEqualTo(initialPeriodicity)
 
-            val updatedReminderEditorDate = chosenTimestampDate.toDisplayableReminderEditorDate()
-            val currentReminderEditorDate = currentReminderEditorState.reminderEditor.reminderEditorDate
+            reminderEditorViewModel.onAction(ReminderEditorAction.OnPeriodicityUpdate(periodicity = weekdaysPeriodicityResponse))
+            val fourthReminderEditorState = awaitItem()
+            assertThat(fourthReminderEditorState.reminderEditor.periodicity).isEqualTo(weekdaysPeriodicityResponse)
+            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(onlyWeekdaysAllowedDateValidationStatus)
+
+            val updatedReminderEditorDate = chosenWeekendDateInMillis.toDisplayableReminderEditorDate()
+            val currentReminderEditorDate = thirdReminderEditorState.reminderEditor.reminderEditorDate
             assertThat(currentReminderEditorDate).isEqualTo(updatedReminderEditorDate)
         }
-        verify(exactly = 1) { timeValidator.validate(chosenTimestampDate) }
+        verify(exactly = 2) { dateValidator.validate(any(), chosenWeekendDateInMillis) }
     }
 
     @Test
     fun error_date_validation_updates_ReminderEditorState() = runTest {
-        val mockId: Long = 7
+        val mockId: Long = 4
         savedStateHandle["id"] = mockId
 
+        val initialRetrievedPeriodicity = Periodicity.WEEKDAYS
         val updatingReminder = mockReminders.find { it.id == mockId }!!
-        val updatingReminderTimestamp = updatingReminder.reminderTime
 
-        val chosenTimestampDate = updatingReminderTimestamp - 3600 * 1000
-        val expectedDateValidationResult = ValidationStatus.Error(error = AlarmValidationError.AlarmReminderTimeValidation.PAST_TENSE)
-        every { timeValidator.validate(chosenTimestampDate) } returns expectedDateValidationResult
+        val chosenWeekendDateInMillis = DateUtil.findClosestWeekendInMillis()
+        every { dateValidator.validate(any(), chosenWeekendDateInMillis) } returns onlyWeekdaysAllowedDateValidationStatus
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
-        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(ValidationStatus.Unspecified)
+        assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(unspecifiedValidationStatus)
 
         reminderEditorViewModel.reminderEditorState.test {
             val is24HourFormat = testTimeFormatter.is24HourFormat.first()
-            val retrievedReminderEditorState = ReminderEditorState(reminderEditor = updatingReminder.toReminderEditorUi(is24HourFormat = is24HourFormat))
+            val retrievedReminderEditor = updatingReminder.toReminderEditorUi(is24HourFormat = is24HourFormat)
             val initialState = awaitItem()
-            assertThat(initialState).isEqualTo(retrievedReminderEditorState)
+            assertThat(initialState.reminderEditor).isEqualTo(retrievedReminderEditor)
             assertThat(initialState.pickerDialog).isNull()
+            assertThat(initialState.reminderEditor.periodicity).isEqualTo(initialRetrievedPeriodicity)
 
-            reminderEditorViewModel.apply {
-                onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.DATE))
-                onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = chosenTimestampDate))
-            }
+            onDateUpdate(dateInMillis = chosenWeekendDateInMillis)
             val updatedReminderEditorState = expectMostRecentItem()
-            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.DATE)
-            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(expectedDateValidationResult)
+            assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
+            assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(onlyWeekdaysAllowedDateValidationStatus)
 
             reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 
-            val updatedReminderEditorDate = chosenTimestampDate.toDisplayableReminderEditorDate()
+            val updatedReminderEditorDate = chosenWeekendDateInMillis.toDisplayableReminderEditorDate()
             val currentReminderEditorDate = currentReminderEditorState.reminderEditor.reminderEditorDate
-            assertThat(currentReminderEditorDate).isNotEqualTo(retrievedReminderEditorState.reminderEditor.reminderEditorDate)
-            assertThat(currentReminderEditorDate.value).isLessThan(retrievedReminderEditorState.reminderEditor.reminderEditorDate.value)
+            assertThat(currentReminderEditorDate).isNotEqualTo(retrievedReminderEditor.reminderEditorDate)
             assertThat(currentReminderEditorDate).isEqualTo(updatedReminderEditorDate)
         }
-        verify(exactly = 1) { timeValidator.validate(chosenTimestampDate) }
+        verify(exactly = 1) { dateValidator.validate(any(), chosenWeekendDateInMillis) }
     }
 
     @Test
@@ -767,6 +796,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val defaultPeriodicity = reminderEditorViewModel.reminderEditorState.value.reminderEditor.periodicity
         assertThat(defaultPeriodicity).isEqualTo(initialPeriodicity)
 
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
@@ -776,7 +807,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         assertThat(firstReminderEditorState.isPeriodicityDropdownMenuExpanded).isFalse()
 
         reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate)
+            onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate(isExpanded = true))
             onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityUpdate(periodicity = expectedPeriodicity))
         }
 
@@ -784,26 +815,34 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         assertThat(secondReminderEditorState.isPeriodicityDropdownMenuExpanded).isTrue()
         assertThat(secondReminderEditorState.reminderEditor.periodicity).isEqualTo(expectedPeriodicity)
 
-        reminderEditorViewModel.onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate)
+        reminderEditorViewModel.onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate(isExpanded = false))
 
         val finalReminderEditorState = reminderEditorViewModel.reminderEditorState.value
         assertThat(finalReminderEditorState.isPeriodicityDropdownMenuExpanded).isFalse()
+        verify(exactly = 1) { dateValidator.validate(any(), any()) }
     }
 
     @Test
     fun successfully_insert_a_new_reminder_send_result_to_channel() = runTest {
+        val chosenDateTime = localDateTime.plusDays(1).plusHours(10).plusMinutes(48)
+        val chosenHour = chosenDateTime.hour
+        val chosenMinute = chosenDateTime.minute
+        val dateInMillis = chosenDateTime.toLocalDate().atStartOfDay(zoneOffset).toInstant().toEpochMilli()
+        val totalMillis = chosenDateTime.toInstant(zoneOffset).toEpochMilli()
         val insertedReminder = Reminder(
             id = 0,
             title = "Do not be lazy !",
-            reminderTime = System.currentTimeMillis() + 3600 * 1000,
-            periodicity = Periodicity.WEEKDAYS
+            reminderTime = totalMillis,
+            periodicity = Periodicity.ONCE
         )
+        val timeResponse = Pair(first = chosenHour, second = chosenMinute)
         val eventValues = mutableListOf<Event<ReminderEditorOneTimeEvent, ReminderError>>()
 
         savedStateHandle["id"] = null
 
-        every { titleValidator.validate(insertedReminder.title) } returns ValidationStatus.Success
-        every { timeValidator.validate(insertedReminder.reminderTime) } returnsMany listOf(ValidationStatus.Success, ValidationStatus.Success)
+        every { titleValidator.validate(insertedReminder.title) } returns successValidationStatus
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns successValidationStatus
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.eventFlow.toList(eventValues) }
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
@@ -815,8 +854,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         reminderEditorViewModel.apply {
             onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = insertedReminder.title))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = insertedReminder.reminderTime))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = insertedReminder.reminderTime))
+            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = dateInMillis))
+            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
             onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityUpdate(periodicity = insertedReminder.periodicity))
             onAction(reminderEditorAction = ReminderEditorAction.OnUpsertReminder)
         }
@@ -825,7 +864,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val expectedInsertedReminder = insertedReminder.toReminderEditorUi(is24HourFormat = is24HourFormat)
         assertThat(finalState.title).isEqualTo(expectedInsertedReminder.title)
         assertThat(finalState.reminderEditorTime).isEqualTo(expectedInsertedReminder.reminderEditorTime)
-        assertThat(finalState.reminderEditorDate).isEqualTo(expectedInsertedReminder.reminderEditorDate)
+        assertThat(finalState.reminderEditorDate.value).isEqualTo(expectedInsertedReminder.reminderEditorDate.value)
         assertThat(finalState.is24HourFormat).isEqualTo(expectedInsertedReminder.is24HourFormat)
         assertThat(finalState.periodicity).isEqualTo(expectedInsertedReminder.periodicity)
 
@@ -839,24 +878,34 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val expectedText = context.getString(string.reminderSuccessfullyAdded)
         assertThat(onUpsertClickText).isEqualTo(expectedText)
 
-        verify(exactly = 1) { titleValidator.validate(insertedReminder.title) }
-        verify(exactly = 2) { timeValidator.validate(insertedReminder.reminderTime) }
+        verify(exactly = 1) {
+            titleValidator.validate(insertedReminder.title)
+            timeValidator.validate(any(), any())
+        }
+        verify(exactly = 2) { dateValidator.validate(any(), any()) }
     }
 
     @Test
     fun retrieve_id_load_reminder_successfully_update_reminder_send_result_to_channel() = runTest {
         val initialReminder = mockReminders[8]
+        val retrievedDateInMillis = initialReminder.reminderTime.toDisplayableReminderEditorDate().value!!
+        localDateTime = getLocalDateTimeFromReminderTime(time = retrievedDateInMillis)
+        val updatedDateTime = localDateTime.plusDays(5).plusHours(20).plusMinutes(50)
+        val updatedDateInMillis = updatedDateTime.toLocalDate().atStartOfDay(zoneOffset).toInstant().toEpochMilli()
+        val timeResponse = Pair(first = updatedDateTime.hour, second = updatedDateTime.minute)
+        val updatedTotalTime = updatedDateTime.toInstant(zoneOffset).toEpochMilli()
         val updatedReminder = initialReminder.copy(
-            title = "Do not be lazy !",
-            reminderTime = initialReminder.reminderTime + 3600 * 1000,
+            title = "Start working on own project",
+            reminderTime = updatedTotalTime,
             periodicity = Periodicity.DAILY
         )
         val eventValues = mutableListOf<Event<ReminderEditorOneTimeEvent, ReminderError>>()
 
         savedStateHandle["id"] = initialReminder.id
 
-        every { titleValidator.validate(updatedReminder.title) } returns ValidationStatus.Success
-        every { timeValidator.validate(updatedReminder.reminderTime) } returnsMany listOf(ValidationStatus.Success, ValidationStatus.Success)
+        every { titleValidator.validate(updatedReminder.title) } returns successValidationStatus
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns successValidationStatus
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
@@ -870,8 +919,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         reminderEditorViewModel.apply {
             onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = updatedReminder.title))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = updatedReminder.reminderTime))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = updatedReminder.reminderTime))
+            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
+            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = updatedDateInMillis))
             onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityUpdate(periodicity = updatedReminder.periodicity))
             onAction(reminderEditorAction = ReminderEditorAction.OnUpsertReminder)
         }
@@ -893,27 +942,31 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val onUpsertClickText = (reminderEditorOneTimeEvent as ReminderEditorOneTimeEvent.OnUpsertClick).uiText.asString(context = context)
         val expectedText = context.getString(string.reminderSuccessfullyUpdated)
         assertThat(onUpsertClickText).isEqualTo(expectedText)
-
-        verify(exactly = 1) { titleValidator.validate(updatedReminder.title) }
-        verify(exactly = 2) { timeValidator.validate(updatedReminder.reminderTime) }
     }
 
     @Test
     fun unsuccessfully_insert_a_new_reminder_send_result_to_channel() = runTest {
+        val chosenDateTime = localDateTime.plusMinutes(30)
+        val chosenHour = chosenDateTime.hour
+        val chosenMinute = chosenDateTime.minute
+        val dateInMillis = chosenDateTime.toLocalDate().atStartOfDay(zoneOffset).toInstant().toEpochMilli()
+        val totalMillis = chosenDateTime.toInstant(zoneOffset).toEpochMilli()
         val insertedReminder = Reminder(
             id = 0,
             title = "Do not be lazy !",
-            reminderTime = System.currentTimeMillis() + 3600 * 1000,
-            periodicity = Periodicity.WEEKDAYS
+            reminderTime = totalMillis,
+            periodicity = Periodicity.ONCE
         )
+        val timeResponse = Pair(first = chosenHour, second = chosenMinute)
         val eventValues = mutableListOf<Event<ReminderEditorOneTimeEvent, ReminderError>>()
 
         val expectedError = ReminderError.Database(error = DatabaseError.SQLITE_EXCEPTION)
 
         savedStateHandle["id"] = null
 
-        every { titleValidator.validate(insertedReminder.title) } returns ValidationStatus.Success
-        every { timeValidator.validate(insertedReminder.reminderTime) } returnsMany listOf(ValidationStatus.Success, ValidationStatus.Success)
+        every { titleValidator.validate(insertedReminder.title) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns successValidationStatus
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
 
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.eventFlow.toList(eventValues) }
         backgroundScope.launch(coroutineDispatcher) { reminderEditorViewModel.reminderEditorState.collect() }
@@ -927,8 +980,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         reminderEditorViewModel.apply {
             onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = insertedReminder.title))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = insertedReminder.reminderTime))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = insertedReminder.reminderTime))
+            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = dateInMillis))
+            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
             onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityUpdate(periodicity = insertedReminder.periodicity))
             onAction(reminderEditorAction = ReminderEditorAction.OnUpsertReminder)
         }
@@ -950,17 +1003,20 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val reminderErrorText = reminderEditorErrorEvent.toString(context = context)
         val expectedErrorText = context.getString(string.sqliteException)
         assertThat(reminderErrorText).isEqualTo(expectedErrorText)
-
-        verify(exactly = 1) { titleValidator.validate(insertedReminder.title) }
-        verify(exactly = 2) { timeValidator.validate(insertedReminder.reminderTime) }
     }
 
     @Test
     fun retrieve_id_load_reminder_successfully_update_reminder_unsuccessfully_send_result_to_channel() = runTest {
         val initialReminder = mockReminders[8]
+        val retrievedDateInMillis = initialReminder.reminderTime.toDisplayableReminderEditorDate().value!!
+        localDateTime = getLocalDateTimeFromReminderTime(time = retrievedDateInMillis)
+        val updatedDateTime = localDateTime.plusHours(12).plusMinutes(5)
+        val updatedDateInMillis = updatedDateTime.toLocalDate().atStartOfDay(zoneOffset).toInstant().toEpochMilli()
+        val timeResponse = Pair(first = updatedDateTime.hour, second = updatedDateTime.minute)
+        val updatedTotalTime = updatedDateTime.toInstant(zoneOffset).toEpochMilli()
         val updatedReminder = initialReminder.copy(
             title = "Do not be lazy !",
-            reminderTime = initialReminder.reminderTime + 3600 * 1000,
+            reminderTime = updatedTotalTime,
             periodicity = Periodicity.DAILY
         )
         val eventValues = mutableListOf<Event<ReminderEditorOneTimeEvent, ReminderError>>()
@@ -969,8 +1025,9 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         savedStateHandle["id"] = initialReminder.id
 
-        every { titleValidator.validate(updatedReminder.title) } returns ValidationStatus.Success
-        every { timeValidator.validate(updatedReminder.reminderTime) } returnsMany listOf(ValidationStatus.Success, ValidationStatus.Success)
+        every { titleValidator.validate(updatedReminder.title) } returns successValidationStatus
+        every { dateValidator.validate(any(), any()) } returns successValidationStatus
+        every { timeValidator.validate(any(), any()) } returns successValidationStatus
 
         testReminderEditorRepository.setReminders(reminders = mockReminders)
 
@@ -986,8 +1043,8 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
         reminderEditorViewModel.apply {
             onAction(reminderEditorAction = ReminderEditorAction.OnTitleUpdate(title = updatedReminder.title))
-            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = updatedReminder.reminderTime))
-            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(time = updatedReminder.reminderTime))
+            onAction(reminderEditorAction = ReminderEditorAction.OnDateUpdate(date = updatedDateInMillis))
+            onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
             onAction(reminderEditorAction = ReminderEditorAction.OnPeriodicityUpdate(periodicity = updatedReminder.periodicity))
             onAction(reminderEditorAction = ReminderEditorAction.OnUpsertReminder)
         }
@@ -1009,9 +1066,6 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
         val reminderErrorText = reminderEditorErrorEvent.toString(context = context)
         val expectedErrorText = context.getString(string.alarmCanceledException)
         assertThat(reminderErrorText).isEqualTo(expectedErrorText)
-
-        verify(exactly = 1) { titleValidator.validate(updatedReminder.title) }
-        verify(exactly = 2) { timeValidator.validate(updatedReminder.reminderTime) }
     }
 
     @Test

@@ -13,7 +13,6 @@ import com.kotlity.core.local.di.reminderDatabaseModule
 import com.kotlity.core.notification.di.notificationManagerModule
 import com.kotlity.core.notification.di.notificationServiceModule
 import com.kotlity.feature_reminders.di.remindersRepositoryModule
-import com.kotlity.feature_reminders.di.remindersViewModelModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -44,7 +43,6 @@ private fun Application.setupKoin() {
             timeFormatterModule,
             dispatcherHandlerModule,
             remindersRepositoryModule,
-            remindersViewModelModule
         )
     }
 }

@@ -4,7 +4,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class DisplayableReminderEditorTimeHourFormat(
+internal data class DisplayableReminderEditorTimeHourFormat(
     val value: String? = null,
     val hourFormat: HourFormat? = null,
 ): Parcelable

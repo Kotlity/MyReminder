@@ -30,6 +30,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -96,7 +97,8 @@ compose = [
     "androidx-material3",
     "androidx-ui",
     "androidx-ui-graphics",
-    "androidx-ui-tooling-preview"
+    "androidx-ui-tooling-preview",
+    "androidx-material-icons-extended"
 ]
 compose-debug = [
     "androidx-ui-tooling",

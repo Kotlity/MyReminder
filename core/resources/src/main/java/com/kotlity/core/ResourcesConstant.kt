@@ -23,8 +23,8 @@ object ResourcesConstant {
     const val _0_4 = 0.4f
     const val _0_5 = 0.5f
     const val _0_71 = 0.71f
+    const val _0_75 = 0.75f
     const val _0_8 = 0.8f
-    const val _0_85 = 0.85f
     const val _1f = 1f
     const val _1_5 = 1.5f
 

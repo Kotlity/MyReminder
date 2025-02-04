@@ -5,7 +5,7 @@ import com.kotlity.core.Periodicity
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class ReminderEditorUi(
+internal data class ReminderEditorUi(
     val id: Long? = null,
     val title: String? = null,
     val is24HourFormat: Boolean = true,

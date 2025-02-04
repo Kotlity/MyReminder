@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.kotlity.feature_reminder_editor"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
