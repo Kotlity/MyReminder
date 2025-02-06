@@ -2,7 +2,8 @@
 agp = "8.4.2"
 kotlin = "2.0.20"
 coreKtx = "1.15.0"
-testCoreKtx= "2.2.0"
+testCoreKtx = "2.2.0"
+testRules = "1.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.8.7"
@@ -37,6 +38,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "testCoreKtx" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "testRules" }
 
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
@@ -133,6 +135,7 @@ android-test = [
     "androidx-runner",
     "androidx-ui-test-manifest",
     "androidx-ui-test-junit4",
+    "androidx-test-rules",
     "androidx-core-testing",
     "kotlinx-coroutines-test",
     "androidx-room-testing",
