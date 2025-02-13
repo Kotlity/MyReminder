@@ -6,6 +6,7 @@ testCoreKtx = "2.2.0"
 testRules = "1.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
+espressoDevice = "1.0.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.12.01"
@@ -39,6 +40,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "testCoreKtx" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "testRules" }
+androidx-test-espresso-device = { module = "androidx.test.espresso:espresso-device", version.ref = "espressoDevice" }
 
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
@@ -136,6 +138,7 @@ android-test = [
     "androidx-ui-test-manifest",
     "androidx-ui-test-junit4",
     "androidx-test-rules",
+    "androidx-test-espresso-device",
     "androidx-core-testing",
     "kotlinx-coroutines-test",
     "androidx-room-testing",
