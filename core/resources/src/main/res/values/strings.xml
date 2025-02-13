@@ -17,7 +17,7 @@
     <string name="time">Time</string>
     <string name="timeHoursAndMinutesHint">00</string>
     <string name="calendar">Calendar</string>
-    <string name="timeHint">00</string>
+    <string name="timeHourAndMinuteHint">00</string>
     <string name="dayHint">dd</string>
     <string name="monthHint">mm</string>
     <string name="yearHint">yyyy</string>
@@ -26,6 +26,7 @@
     <string name="once">Once</string>
     <string name="daily">Daily</string>
     <string name="monToFri">Mon to Fri</string>
+
     <string name="selectTimeTitle">Select time</string>
     <string name="enterTimeTitle">Enter time</string>
 
@@ -64,7 +65,6 @@
     <string name="reminderSuccessfullyDeleted">The alarm has been removed !</string>
     <string name="undo">Undo</string>
 
-
     <string name="emptyRemindersLogoDescription">Empty reminders logo</string>
     <string name="addTaskIconDescription">Add task description</string>
     <string name="addTaskAnimatedContentLabel">Add task label</string>
@@ -74,14 +74,39 @@
     <string name="loadingIndicatorLabel">Loading indicator label</string>
     <string name="loadingIndicatorColorLabel">Loading wheel color label</string>
     <string name="loadingIndicatorHeightLabel">Loading wheel height label</string>
+
     <string name="backIconButtonDescription">Back</string>
     <string name="doneIconButtonDescription">Done</string>
+    <string name="titleIconDescription">Title icon description</string>
     <string name="timeIconDescription">Time icon description</string>
     <string name="dateIconDescription">Date icon description</string>
+    <string name="periodicityIconDescription">Periodicity icon description</string>
     <string name="selectTimeTitleDescription">Select time description</string>
     <string name="inputTimeTitleDescription">Input time description</string>
     <string name="periodicityArrowDownDescription">Periodicity arrow down description</string>
     <string name="periodicityArrowUpDescription">Periodicity arrow up description</string>
+
+    <string name="titleTextFieldTestTag">Title text field test tag</string>
+    <string name="titleTextFieldErrorTestTag">Title text field error test tag</string>
+
+    <string name="timeTextHourFormatTestTag">Time text hour format test tag</string>
+    <string name="hourTextFieldTestTag">Hour text field test tag</string>
+    <string name="minuteTextFieldTestTag">Minute text field test tag</string>
+    <string name="timeTextFieldErrorTestTag">Time text field error test tag</string>
+    <string name="timePickerWidgetTestTag">Time picker widget test tag</string>
+    <string name="timePickerWidgetTitleTestTag">Time picker widget title test tag</string>
+    <string name="timePickerTestTag">Time picker test tag</string>
+    <string name="timeInputTestTag">Time input test tag</string>
+
+    <string name="dayTextFieldTestTag">Day text field test tag</string>
+    <string name="monthTextFieldTestTag">Month text field test tag</string>
+    <string name="yearTextFieldTestTag">Year text field test tag</string>
+    <string name="dateTextFieldErrorTestTag">Date text field error test tag</string>
+    <string name="datePickerWidgetTestTag">Date picker widget test tag</string>
+    <string name="datePickerTestTag">Date picker test tag</string>
+
+    <string name="selectedPeriodicityItemTestTag">Selected periodicity item test tag</string>
+    <string name="periodicityListTestTag">Periodicity list test tag</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
