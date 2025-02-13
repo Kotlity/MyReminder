@@ -14,9 +14,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.kotlity.core.resources.R
+import com.kotlity.core.ResourcesConstant
+import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.feature_reminder_editor.mappers.toDisplayableReminderEditorDate
@@ -27,9 +31,10 @@ import com.kotlity.feature_reminder_editor.utils.WeekdaysSelectableDates
 @Composable
 internal fun DateSection(
     modifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(dimensionResource(id = R.dimen._5dp)),
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(dimensionResource(id = dimen._5dp)),
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     pickerDialog: PickerDialog?,
+    canShowDatePicker: Boolean,
     displayableReminderEditorDate: DisplayableReminderEditorDate,
     selectableDates: SelectableDates,
     isError: Boolean,
@@ -54,8 +59,10 @@ internal fun DateSection(
     }
     if (pickerDialog != null && pickerDialog.isDate) {
         DatePickerWidget(
+            modifier = Modifier.testTag(stringResource(id = string.datePickerWidgetTestTag)),
             initialSelectedDateMillis = displayableReminderEditorDate.value,
             selectableDates = selectableDates,
+            canShowDatePicker = canShowDatePicker,
             onDismiss = onDateWidgetDismissClick,
             onConfirm = onDateWidgetConfirmClick
         )
@@ -65,6 +72,8 @@ internal fun DateSection(
 @PreviewAnnotation
 @Composable
 private fun DateSectionPreview() {
+
+    val canShowDatePicker = LocalConfiguration.current.screenHeightDp >= ResourcesConstant._400
 
     var displayableReminderEditorDate by rememberSaveable(saver = DisplayableReminderEditorDateSaver) {
         mutableStateOf(DisplayableReminderEditorDate())
@@ -80,6 +89,7 @@ private fun DateSectionPreview() {
             pickerDialog = pickerDialog,
             displayableReminderEditorDate = displayableReminderEditorDate,
             selectableDates = WeekdaysSelectableDates,
+            canShowDatePicker = canShowDatePicker,
             isError = false,
             errorText = null,
             onEditorDateWidgetClick = {

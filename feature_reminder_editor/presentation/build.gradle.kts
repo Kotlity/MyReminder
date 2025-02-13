@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -40,6 +42,11 @@ android {
         resources {
             merges += "META-INF/LICENSE.md"
             merges += "META-INF/LICENSE-notice.md"
+        }
+    }
+    testOptions {
+        emulatorControl {
+            enable = true
         }
     }
 }

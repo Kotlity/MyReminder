@@ -9,13 +9,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.util.PreviewAnnotation
-import com.kotlity.feature_reminder_editor.composables.title.EditorTitleSection
+import com.kotlity.feature_reminder_editor.composables.EditorTitleSection
 import com.kotlity.feature_reminder_editor.models.HourFormat
 
 @Composable
@@ -42,6 +43,7 @@ internal fun EditorTimeTitleSection(
         )
         hourFormat?.let { format ->
             Text(
+                modifier = Modifier.testTag(stringResource(id = string.timeTextHourFormatTestTag)),
                 text = format.name,
                 style = hourFormatStyle
             )

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,7 +35,7 @@ internal fun TimeDialogWidget(
     tonalElevation: Dp = dimensionResource(id = dimen._6dp),
     shadowElevation: Dp = dimensionResource(id = dimen._0dp),
     border: BorderStroke? = null,
-    @StringRes titleRes: Int = string.selectTimeTitle,
+    @StringRes titleRes: Int,
     titleStyle: TextStyle = MaterialTheme.typography.displayMedium,
     @StringRes dismissTextRes: Int = string.cancel,
     @StringRes okTextRes: Int = string.ok,
@@ -64,6 +65,7 @@ internal fun TimeDialogWidget(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = dimensionResource(id = dimen._20dp))
+                        .testTag(stringResource(id = string.timePickerWidgetTitleTestTag))
                     ,
                     text = stringResource(id = titleRes),
                     style = titleStyle

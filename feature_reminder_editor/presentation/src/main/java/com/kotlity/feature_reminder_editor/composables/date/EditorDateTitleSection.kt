@@ -8,7 +8,7 @@ import androidx.compose.ui.res.stringResource
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.util.PreviewAnnotation
-import com.kotlity.feature_reminder_editor.composables.title.EditorTitleSection
+import com.kotlity.feature_reminder_editor.composables.EditorTitleSection
 
 @Composable
 fun EditorDateTitleSection(

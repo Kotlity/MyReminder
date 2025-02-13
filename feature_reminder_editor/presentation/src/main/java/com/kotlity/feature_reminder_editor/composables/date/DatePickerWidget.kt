@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -43,12 +44,12 @@ import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.feature_reminder_editor.mappers.toDisplayableReminderEditorDate
 import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorDate
 import com.kotlity.feature_reminder_editor.utils.WeekdaysSelectableDates
-
 @Composable
 internal fun DatePickerWidget(
     modifier: Modifier = Modifier,
     initialSelectedDateMillis: Long?,
     selectableDates: SelectableDates,
+    canShowDatePicker: Boolean,
     @StringRes dismissTextRes: Int = R.string.cancel,
     @StringRes okTextRes: Int = R.string.ok,
     shape: Shape = DatePickerDefaults.shape,
@@ -59,9 +60,7 @@ internal fun DatePickerWidget(
     onConfirm: (Long?) -> Unit
 ) {
 
-    val isScreenHeightEnoughToShowDatePicker = LocalConfiguration.current.screenHeightDp >= _400
-
-    val initialDisplayMode = if (isScreenHeightEnoughToShowDatePicker) DisplayMode.Picker else DisplayMode.Input
+    val initialDisplayMode = if (canShowDatePicker) DisplayMode.Picker else DisplayMode.Input
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = initialSelectedDateMillis,
@@ -69,9 +68,9 @@ internal fun DatePickerWidget(
         selectableDates = selectableDates
     )
 
-    LaunchedEffect(key1 = isScreenHeightEnoughToShowDatePicker) {
+    LaunchedEffect(key1 = canShowDatePicker) {
         if (datePickerState.displayMode == DisplayMode.Input) return@LaunchedEffect
-        if (!isScreenHeightEnoughToShowDatePicker && datePickerState.displayMode == DisplayMode.Picker) datePickerState.displayMode = DisplayMode.Input
+        if (!canShowDatePicker && datePickerState.displayMode == DisplayMode.Picker) datePickerState.displayMode = DisplayMode.Input
     }
 
     DatePickerDialog(
@@ -97,8 +96,9 @@ internal fun DatePickerWidget(
         properties = properties,
         content = {
             DatePicker(
+                modifier = Modifier.testTag(stringResource(id = R.string.datePickerTestTag)),
                 state = datePickerState,
-                showModeToggle = isScreenHeightEnoughToShowDatePicker,
+                showModeToggle = canShowDatePicker,
                 colors = colors
             )
         }
@@ -108,6 +108,8 @@ internal fun DatePickerWidget(
 @PreviewAnnotation
 @Composable
 private fun DatePickerWidgetPreview() {
+
+    val canShowDatePicker = LocalConfiguration.current.screenHeightDp >= _400
 
     var isShowDatePickerWidget by rememberSaveable {
         mutableStateOf(false)
@@ -138,6 +140,7 @@ private fun DatePickerWidgetPreview() {
             DatePickerWidget(
                 initialSelectedDateMillis = displayableReminderEditorDate.value,
                 selectableDates = WeekdaysSelectableDates,
+                canShowDatePicker = canShowDatePicker,
                 onDismiss = { isShowDatePickerWidget = false },
                 onConfirm = { chosenDateInMillis ->
                     chosenDateInMillis?.let {

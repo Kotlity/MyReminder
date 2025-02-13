@@ -31,7 +31,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -79,7 +81,8 @@ fun PeriodicityPickerWidget(
                 .fillMaxWidth()
                 .onGloballyPositioned { layoutCoordinates ->
                     periodicityItemLayoutState.updateLayoutState(layoutCoordinates = layoutCoordinates)
-                },
+                }
+                .testTag(stringResource(id = string.selectedPeriodicityItemTestTag)),
             text = periodicity.mapToString(context = context),
             icon = icon,
             iconContentDescription = iconContentDescription,
@@ -101,6 +104,7 @@ fun PeriodicityPickerWidget(
                                 bottomEnd = dimensionResource(id = dimen._12dp)
                             )
                         )
+                        .testTag(stringResource(id = string.periodicityListTestTag))
                 ) {
                     Periodicity.entries.forEach { periodicityItem ->
                         PeriodicityItem(

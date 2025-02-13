@@ -16,9 +16,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kotlity.core.ResourcesConstant._400
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.util.AlarmValidationError
@@ -39,6 +43,7 @@ internal fun TimeSection(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     displayableReminderEditorTime: DisplayableReminderEditorTime,
     is24HourFormat: Boolean,
+    canShowToggleIconButton: Boolean,
     isError: Boolean,
     errorText: String?,
     pickerDialog: PickerDialog?,
@@ -69,14 +74,14 @@ internal fun TimeSection(
                 .background(
                     color = MaterialTheme.colorScheme.surface,
                     shape = MaterialTheme.shapes.large
-                ),
+                )
+                .testTag(stringResource(id = string.timePickerWidgetTestTag)),
             timeResponse = displayableReminderEditorTime.response,
             timePickerDialog = pickerDialog.getTime,
-            timeWidgetResourceProvider = when(pickerDialog.getTime) {
-                PickerDialog.Time.TIME_PICKER -> TimePickerWidgetResourceProvider()
-                PickerDialog.Time.TIME_INPUT -> TimeInputWidgetResourceProvider()
-            },
+            timeWidgetResourceProvider = if (pickerDialog.getTime.isTimePicker) TimePickerWidgetResourceProvider()
+                else TimeInputWidgetResourceProvider(),
             is24HourFormat = is24HourFormat,
+            canShowToggleIconButton = canShowToggleIconButton,
             onDismiss = onTimePickerWidgetDismissClick,
             onConfirm = onTimePickerWidgetConfirmClick,
             onToggleIconClick = onToggleTimePickerWidgetClick
@@ -89,6 +94,7 @@ internal fun TimeSection(
 private fun TimeSectionPreview() {
 
     val context = LocalContext.current
+    val canShowTimePicker = LocalConfiguration.current.screenHeightDp > _400
 
     var pickerDialog by remember {
         mutableStateOf<PickerDialog?>(null)
@@ -110,6 +116,7 @@ private fun TimeSectionPreview() {
             modifier = Modifier.padding(20.dp),
             displayableReminderEditorTime = displayableReminderEditorTime,
             is24HourFormat = is24HourFormat,
+            canShowToggleIconButton = canShowTimePicker,
             isError = timeValidationStatus.isError(),
             errorText = if (timeValidationStatus.isError()) timeValidationStatus.getValidationError().toString(context = context) else null,
             pickerDialog = pickerDialog,

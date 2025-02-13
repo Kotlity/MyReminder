@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import com.kotlity.core.ResourcesConstant._16sp
 import com.kotlity.core.ResourcesConstant._18sp
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme

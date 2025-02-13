@@ -1,5 +1,6 @@
 package com.kotlity.feature_reminder_editor.composables
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.kotlity.core.ResourcesConstant
 import com.kotlity.core.resources.R
@@ -40,6 +43,7 @@ internal fun EditorTextField(
     textStyle: TextStyle = hintStyle.copy(fontSize = ResourcesConstant._18sp),
     isError: Boolean,
     hint: String?,
+    @StringRes testTagRes: Int,
     hintPadding: PaddingValues? = null,
     onFocusChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null
@@ -52,9 +56,11 @@ internal fun EditorTextField(
         modifier = modifier
     ) {
         BasicTextField(
-            modifier = if (onFocusChange != null) Modifier.onFocusChanged { focusState ->
-                onFocusChange(focusState.isFocused)
-            } else Modifier,
+            modifier = Modifier
+                .then(if (onFocusChange != null) Modifier.onFocusChanged { focusState ->
+                    onFocusChange(focusState.isFocused)
+                } else Modifier)
+                .testTag(stringResource(id = testTagRes)),
             value = text,
             onValueChange = onTextChange,
             enabled = enabled,
@@ -103,7 +109,8 @@ private fun EditorTextFieldPreview() {
                 text = text,
                 onTextChange = { text = it },
                 isError = true,
-                hint = null
+                hint = null,
+                testTagRes = R.string.titleTextFieldTestTag
             )
         }
     }

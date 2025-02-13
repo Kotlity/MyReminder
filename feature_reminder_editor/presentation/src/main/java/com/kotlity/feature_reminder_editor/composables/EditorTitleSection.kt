@@ -1,4 +1,4 @@
-package com.kotlity.feature_reminder_editor.composables.title
+package com.kotlity.feature_reminder_editor.composables
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

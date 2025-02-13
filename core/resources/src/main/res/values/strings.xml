@@ -15,7 +15,6 @@
     <string name="title">Title</string>
     <string name="insertTitle">Insert Title</string>
     <string name="time">Time</string>
-    <string name="timeHoursAndMinutesHint">00</string>
     <string name="calendar">Calendar</string>
     <string name="timeHourAndMinuteHint">00</string>
     <string name="dayHint">dd</string>

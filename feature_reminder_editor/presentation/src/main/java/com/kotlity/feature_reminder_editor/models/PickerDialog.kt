@@ -12,6 +12,12 @@ import kotlinx.parcelize.Parcelize
 
     val isTime
         get() = this is Time
+
+     val isTimePicker
+         get() = this == Time.TIME_PICKER
+
+     val isTimeInput
+         get() = this == Time.TIME_INPUT
     val getTime
         get() = this as Time
 

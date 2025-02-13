@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -70,6 +71,7 @@ internal fun EditorDateWidget(
                 enabled = false,
                 isError = isError,
                 hint = dayHint,
+                testTagRes = string.dayTextFieldTestTag,
                 hintPadding = horizontalPadding,
                 onClick = onClick
             )
@@ -81,6 +83,7 @@ internal fun EditorDateWidget(
                 enabled = false,
                 isError = isError,
                 hint = monthHint,
+                testTagRes = string.monthTextFieldTestTag,
                 hintPadding = horizontalPadding,
                 onClick = onClick
             )
@@ -92,13 +95,16 @@ internal fun EditorDateWidget(
                 enabled = false,
                 isError = isError,
                 hint = yearHint,
+                testTagRes = string.yearTextFieldTestTag,
                 hintPadding = horizontalPadding,
                 onClick = onClick
             )
         }
         if (isError) {
             Text(
-                modifier = Modifier.fillMaxWidth(ResourcesConstant._0_5),
+                modifier = Modifier
+                    .fillMaxWidth(ResourcesConstant._0_5)
+                    .testTag(stringResource(id = string.dateTextFieldErrorTestTag)),
                 text = errorText!!,
                 style = errorTextStyle
             )

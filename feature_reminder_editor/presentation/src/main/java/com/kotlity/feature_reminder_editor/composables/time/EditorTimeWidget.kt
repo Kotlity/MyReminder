@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -68,6 +69,7 @@ internal fun EditorTimeWidget(
                 enabled = false,
                 isError = isError,
                 hint = textFieldsHint,
+                testTagRes = string.hourTextFieldTestTag,
                 hintPadding = horizontalPadding,
                 onClick = onClick
             )
@@ -79,13 +81,16 @@ internal fun EditorTimeWidget(
                 enabled = false,
                 isError = isError,
                 hint = textFieldsHint,
+                testTagRes = string.minuteTextFieldTestTag,
                 hintPadding = horizontalPadding,
                 onClick = onClick
             )
         }
         if (isError) {
             Text(
-                modifier = Modifier.fillMaxWidth(_0_4),
+                modifier = Modifier
+                    .fillMaxWidth(_0_4)
+                    .testTag(stringResource(id = string.timeTextFieldErrorTestTag)),
                 text = errorText!!,
                 style = errorTextStyle
             )
@@ -96,7 +101,7 @@ internal fun EditorTimeWidget(
 private class TimeTextFieldHintProvider(private val context: Context): TextFieldHintProvider<DisplayableTimeResponse> {
 
     override fun getHint(data: DisplayableTimeResponse): String? {
-        return if (data.hour == null && data.minute == null) context.getString(string.timeHint) else null
+        return if (data.hour == null && data.minute == null) context.getString(string.timeHourAndMinuteHint) else null
     }
 }
 

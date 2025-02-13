@@ -129,7 +129,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
 
     private fun onDateUpdate(dateInMillis: Long) {
         reminderEditorViewModel.apply {
-            onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Date))
+            onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = PickerDialog.Date))
             onAction(ReminderEditorAction.OnDateUpdate(date = dateInMillis))
             onAction(ReminderEditorAction.OnHandleTimeValidationStatus)
         }
@@ -151,13 +151,13 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
     }
 
     private fun onClosePickerDialog() {
-        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+        reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
         assertThat(reminderEditorViewModel.reminderEditorState.value.pickerDialog).isNull()
     }
 
     private fun onTimeUpdate(timeResponse: Pair<Int, Int>) {
         reminderEditorViewModel.apply {
-            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Time.TIME_PICKER))
+            onAction(reminderEditorAction = ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = PickerDialog.Time.TIME_PICKER))
             onAction(reminderEditorAction = ReminderEditorAction.OnTimeUpdate(response = timeResponse))
         }
     }
@@ -630,7 +630,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
             assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
             assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
 
-            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 
@@ -671,7 +671,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
             assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
             assertThat(reminderEditorViewModel.timeValidationStatus).isEqualTo(successValidationStatus)
 
-            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 
@@ -705,7 +705,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
             assertThat(secondReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
             assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(successValidationStatus)
 
-            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
             val thirdReminderEditorState = awaitItem()
             assertThat(thirdReminderEditorState.pickerDialog).isNull()
             assertThat(thirdReminderEditorState.reminderEditor.periodicity).isEqualTo(initialPeriodicity)
@@ -750,7 +750,7 @@ class ReminderEditorViewModelTest: AndroidKoinDependencyProvider(
             assertThat(updatedReminderEditorState.pickerDialog).isEqualTo(PickerDialog.Date)
             assertThat(reminderEditorViewModel.dateValidationStatus).isEqualTo(onlyWeekdaysAllowedDateValidationStatus)
 
-            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+            reminderEditorViewModel.onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
             val currentReminderEditorState = awaitItem()
             assertThat(currentReminderEditorState.pickerDialog).isNull()
 

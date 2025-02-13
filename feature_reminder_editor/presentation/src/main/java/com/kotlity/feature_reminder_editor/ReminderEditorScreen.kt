@@ -44,6 +44,7 @@ import com.kotlity.core.Periodicity
 import com.kotlity.core.ResourcesConstant._0_5
 import com.kotlity.core.ResourcesConstant._0_8
 import com.kotlity.core.ResourcesConstant._1f
+import com.kotlity.core.ResourcesConstant._400
 import com.kotlity.core.composables.NotificationsPermissionTextProvider
 import com.kotlity.core.composables.PermissionDialog
 import com.kotlity.core.resources.R.*
@@ -53,7 +54,6 @@ import com.kotlity.core.util.Event
 import com.kotlity.core.util.ObserveAsEvents
 import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.core.util.ReminderError
-import com.kotlity.core.util.ValidationStatus
 import com.kotlity.core.util.getActivity
 import com.kotlity.core.util.onError
 import com.kotlity.core.util.onSuccess
@@ -66,8 +66,7 @@ import com.kotlity.feature_reminder_editor.composables.TopSection
 import com.kotlity.feature_reminder_editor.composables.date.DateSection
 import com.kotlity.feature_reminder_editor.composables.periodicity.PeriodicitySection
 import com.kotlity.feature_reminder_editor.composables.time.TimeSection
-import com.kotlity.feature_reminder_editor.composables.title.EditorTitleSection
-import com.kotlity.feature_reminder_editor.composables.title.EditorTitleTextField
+import com.kotlity.feature_reminder_editor.composables.title.TitleSection
 import com.kotlity.feature_reminder_editor.events.ReminderEditorOneTimeEvent
 import com.kotlity.feature_reminder_editor.mappers.mapToString
 import com.kotlity.feature_reminder_editor.mappers.toPermission
@@ -108,7 +107,7 @@ internal fun ReminderEditorScreen(
     val eventFlow = reminderEditorViewModel.eventFlow
 
     ReminderEditorScreenContent(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         reminderEditorState = reminderEditorState,
         validationStatuses = validationStatuses,
         permissionsToAsk = permissionsToAsk,
@@ -120,12 +119,12 @@ internal fun ReminderEditorScreen(
 }
 
 @Composable
-private fun ReminderEditorScreenContent(
+internal fun ReminderEditorScreenContent(
     modifier: Modifier = Modifier,
     reminderEditorState: ReminderEditorState,
-    validationStatuses: ValidationStatuses,
-    permissionsToAsk: List<Permission>,
-    eventFlow: Flow<Event<ReminderEditorOneTimeEvent, ReminderError>>,
+    validationStatuses: ValidationStatuses = ValidationStatuses(),
+    permissionsToAsk: List<Permission> = emptyList(),
+    eventFlow: Flow<Event<ReminderEditorOneTimeEvent, ReminderError>> = emptyFlow(),
     onAction: (ReminderEditorAction) -> Unit,
     onBackClick: () -> Unit,
     onShowSnackbar: suspend (String, String?) -> Boolean
@@ -134,6 +133,7 @@ private fun ReminderEditorScreenContent(
     val context = LocalContext.current
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
+    val isScreenHeightEnough = configuration.screenHeightDp > _400
 
     val isPortraitOrientation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
@@ -225,14 +225,16 @@ private fun ReminderEditorScreenContent(
         onAction(ReminderEditorAction.OnHandleTimeValidationStatus)
     }
 
+    LaunchedEffect(key1 = isScreenHeightEnough) {
+        onAction(ReminderEditorAction.OnCanShowTimePicker(canShowTimePicker = isScreenHeightEnough))
+    }
+
     Box(
         modifier = modifier
+            .fillMaxSize()
             .then(if (!isPortraitOrientation) Modifier.verticalScroll(scrollState) else Modifier)
     ) {
         TopSection(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = dimensionResource(id = dimen._10dp)),
             isDoneButtonEnabled = isDoneButtonEnabled,
             onBackClick = onBackClick,
             onDoneClick = {
@@ -245,7 +247,9 @@ private fun ReminderEditorScreenContent(
             modifier = Modifier
                 .fillMaxWidth(if (isPortraitOrientation) _0_8 else _0_5)
                 .padding(
-                    top = if (isPortraitOrientation) dimensionResource(id = dimen._0dp) else dimensionResource(id = dimen._15dp)
+                    top = if (isPortraitOrientation) dimensionResource(id = dimen._0dp) else dimensionResource(
+                        id = dimen._15dp
+                    )
                 )
                 .offset {
                     IntOffset(
@@ -277,12 +281,7 @@ private fun ReminderEditorScreenContent(
                         modifier = contentPaddingEndModifier,
                         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = dimen._15dp))
                     ) {
-                        EditorTitleSection(
-                            titleRes = string.title,
-                            iconRes = drawable.write
-                        )
-                        EditorTitleTextField(
-                            modifier = Modifier.fillMaxWidth(),
+                        TitleSection(
                             text = reminderEditorState.reminderEditor.title ?: "",
                             onTextChange = { newTitle ->
                                 onAction(ReminderEditorAction.OnTitleUpdate(title = newTitle))
@@ -301,42 +300,44 @@ private fun ReminderEditorScreenContent(
                             TimeSection(
                                 displayableReminderEditorTime = displayableReminderEditorTime,
                                 is24HourFormat = reminderEditorState.reminderEditor.is24HourFormat,
+                                canShowToggleIconButton = isScreenHeightEnough,
                                 isError = timeValidationStatus.isError(),
                                 errorText = if (timeValidationStatus.isError()) timeValidationStatus.getValidationError().toString(context = context) else null,
                                 pickerDialog = reminderEditorState.pickerDialog,
                                 onEditorTimeWidgetClick = {
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Time.TIME_PICKER))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = PickerDialog.Time.TIME_PICKER))
                                 },
                                 onToggleTimePickerWidgetClick = {
                                     reminderEditorState.pickerDialog?.let { dialog ->
                                         val pickerDialogOnChange = if (dialog.getTime == PickerDialog.Time.TIME_INPUT) PickerDialog.Time.TIME_PICKER else PickerDialog.Time.TIME_INPUT
                                         onAction(ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate(isExpanded = false))
-                                        onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = pickerDialogOnChange))
+                                        onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = pickerDialogOnChange))
                                     }
                                 },
                                 onTimePickerWidgetDismissClick = {
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
                                 },
                                 onTimePickerWidgetConfirmClick = { timeResponse ->
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
                                     onAction(ReminderEditorAction.OnTimeUpdate(response = timeResponse))
                                 }
                             )
                             DateSection(
                                 pickerDialog = reminderEditorState.pickerDialog,
+                                canShowDatePicker = isScreenHeightEnough,
                                 displayableReminderEditorDate = displayableReminderEditorDate,
                                 selectableDates = if (reminderEditorState.reminderEditor.periodicity != Periodicity.WEEKDAYS) FutureSelectableDates() else WeekdaysSelectableDates,
                                 isError = dateValidationStatus.isError(),
                                 errorText = if (dateValidationStatus.isError()) dateValidationStatus.getValidationError().toString(context = context) else null,
                                 onEditorDateWidgetClick = {
                                     onAction(ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate(isExpanded = false))
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = PickerDialog.Date))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = PickerDialog.Date))
                                 },
                                 onDateWidgetDismissClick = {
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
                                 },
                                 onDateWidgetConfirmClick = { chosenDateInMillis ->
-                                    onAction(ReminderEditorAction.OnPickerDialogVisibilityUpdate(pickerDialog = null))
+                                    onAction(ReminderEditorAction.OnPickerDialogUpdate(pickerDialog = null))
                                     chosenDateInMillis?.let { onAction(ReminderEditorAction.OnDateUpdate(date = it)) }
                                 }
                             )
@@ -403,14 +404,6 @@ private fun ReminderEditorScreenContentPreview() {
         isPeriodicityDropdownMenuExpanded = false
     )
 
-    val unspecifiedValidationStatus = ValidationStatus.Unspecified
-
-    val validationStatuses = ValidationStatuses(
-        title = unspecifiedValidationStatus,
-        time = unspecifiedValidationStatus,
-        date = unspecifiedValidationStatus
-    )
-
     MyReminderTheme {
         ReminderEditorScreenContent(
             modifier = Modifier
@@ -418,9 +411,6 @@ private fun ReminderEditorScreenContentPreview() {
                 .systemBarsPadding()
                 .statusBarsPadding(),
             reminderEditorState = state,
-            validationStatuses = validationStatuses,
-            permissionsToAsk = emptyList(),
-            eventFlow = emptyFlow(),
             onAction = {},
             onBackClick = { /*TODO*/ },
             onShowSnackbar = { _, _ -> false }

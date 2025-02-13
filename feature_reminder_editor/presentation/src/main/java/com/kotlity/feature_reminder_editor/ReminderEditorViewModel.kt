@@ -107,7 +107,8 @@ internal class ReminderEditorViewModel(
             is ReminderEditorAction.OnTitleUpdate -> onTitleUpdate(reminderEditorAction.title)
             is ReminderEditorAction.OnTimeUpdate -> onTimeUpdate(reminderEditorAction.response)
             is ReminderEditorAction.OnDateUpdate -> onDateUpdate(reminderEditorAction.date)
-            is ReminderEditorAction.OnPickerDialogVisibilityUpdate -> onPickerDialogVisibilityUpdate(reminderEditorAction.pickerDialog)
+            is ReminderEditorAction.OnPickerDialogUpdate -> onPickerDialogUpdate(reminderEditorAction.pickerDialog)
+            is ReminderEditorAction.OnCanShowTimePicker -> onCanShowTimePicker(reminderEditorAction.canShowTimePicker)
             is ReminderEditorAction.OnPeriodicityUpdate -> onPeriodicityUpdate(reminderEditorAction.periodicity)
             is ReminderEditorAction.OnPermissionResult -> onPermissionResult(reminderEditorAction.permission, reminderEditorAction.isGranted)
             is ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate -> onPeriodicityDropdownMenuVisibilityUpdate(reminderEditorAction.isExpanded)
@@ -122,6 +123,9 @@ internal class ReminderEditorViewModel(
     private fun onInitiallyLoadReminderIfNeeded() {
         viewModelScope.launch {
             if (id == null) return@launch
+
+            val isAlreadyUpdatedStateAndProcessDeathOccurred = savedStateHandle.getCurrentState() != ReminderEditorState()
+            if (isAlreadyUpdatedStateAndProcessDeathOccurred) return@launch
 
             reminderEditorRepository.getReminderById(id = id!!)
                 .onSuccess { reminder ->
@@ -209,8 +213,15 @@ internal class ReminderEditorViewModel(
         if (isFocused && currentState.isPeriodicityDropdownMenuExpanded) onPeriodicityDropdownMenuVisibilityUpdate(isExpanded = false)
     }
 
-    private fun onPickerDialogVisibilityUpdate(pickerDialog: PickerDialog?) {
+    private fun onPickerDialogUpdate(pickerDialog: PickerDialog?) {
         savedStateHandle.updateState { copy(pickerDialog = pickerDialog) }
+    }
+
+    private fun onCanShowTimePicker(canShowTimePicker: Boolean) {
+        val pickerDialog = savedStateHandle.getCurrentState().pickerDialog ?: return
+        if (pickerDialog.isDate) return
+
+        if (pickerDialog.isTimePicker && !canShowTimePicker) onPickerDialogUpdate(PickerDialog.Time.TIME_INPUT)
     }
 
     private fun onRemovePermission() {

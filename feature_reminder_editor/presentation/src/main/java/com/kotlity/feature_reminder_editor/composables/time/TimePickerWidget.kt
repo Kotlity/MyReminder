@@ -23,9 +23,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import com.kotlity.core.ResourcesConstant._400
 import com.kotlity.core.resources.R.*
 import com.kotlity.feature_reminder_editor.models.PickerDialog
 
@@ -36,6 +35,7 @@ internal fun TimePickerWidget(
     timePickerDialog: PickerDialog.Time,
     timeWidgetResourceProvider: TimeWidgetResourceProvider,
     is24HourFormat: Boolean,
+    canShowToggleIconButton: Boolean,
     colors: TimePickerColors = TimePickerDefaults.colors(),
     layoutType: TimePickerLayoutType = TimePickerDefaults.layoutType(),
     onDismiss: () -> Unit,
@@ -53,10 +53,9 @@ internal fun TimePickerWidget(
         mutableStateOf(false)
     }
 
-    val canShowTimePicker = LocalConfiguration.current.screenHeightDp > _400
-
     if (shouldRecreateTimePickerState) {
         timePickerState.is24hour = is24HourFormat
+
         timePickerState = rememberTimePickerState(
             initialHour = timePickerState.hour,
             initialMinute = timePickerState.minute,
@@ -77,22 +76,26 @@ internal fun TimePickerWidget(
             onConfirm(Pair(first = timePickerState.hour, second = timePickerState.minute))
         },
         content = {
-            if (timePickerDialog == PickerDialog.Time.TIME_PICKER && canShowTimePicker) {
+            if (timePickerDialog.isTimePicker) {
                 TimePicker(
+                    modifier = Modifier.testTag(stringResource(id = string.timePickerTestTag)),
                     state = timePickerState,
                     colors = colors,
                     layoutType = layoutType
                 )
             } else {
                 TimeInput(
+                    modifier = Modifier.testTag(stringResource(id = string.timeInputTestTag)),
                     state = timePickerState,
                     colors = colors
                 )
             }
         },
         toggle = {
-            if (canShowTimePicker) {
-                IconButton(onClick = onToggleIconClick) {
+            if (canShowToggleIconButton) {
+                IconButton(
+                    onClick = onToggleIconClick
+                ) {
                     Icon(
                         imageVector = timeWidgetResourceProvider.icon,
                         contentDescription = stringResource(id = timeWidgetResourceProvider.description)

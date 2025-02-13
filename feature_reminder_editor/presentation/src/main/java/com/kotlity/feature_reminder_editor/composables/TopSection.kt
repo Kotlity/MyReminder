@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kotlity.core.composables.TopSectionTitle
@@ -35,7 +36,9 @@ internal fun TopSection(
 ) {
 
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = dimensionResource(id = dimen._10dp)),
         horizontalArrangement = horizontalArrangement,
         verticalAlignment = verticalAlignment
     ) {
