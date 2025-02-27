@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
@@ -32,6 +33,9 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    buildFeatures {
+        compose = true
+    }
     room {
         schemaDirectory("$projectDir/schemas")
     }
@@ -46,6 +50,8 @@ android {
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
+    implementation(project(":core:presentation"))
+    implementation(project(":core:resources"))
 
     implementation(libs.bundles.android.core)
 
@@ -64,5 +70,7 @@ dependencies {
     testImplementation(libs.bundles.test)
 
     androidTestImplementation(libs.bundles.android.test)
+
+    debugImplementation(libs.bundles.compose.debug)
 
 }
