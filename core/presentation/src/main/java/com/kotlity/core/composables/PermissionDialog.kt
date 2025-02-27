@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import com.kotlity.core.resources.R.string
 
@@ -19,7 +20,11 @@ fun PermissionDialog(
     @StringRes okText: Int = string.ok,
     @StringRes dismissText: Int = string.dismiss,
     @StringRes grantPermissionText: Int = string.grantPermission,
-    @StringRes titleText: Int = string.title,
+    @StringRes titleText: Int = string.permissionTitle,
+    @StringRes confirmButtonTestTag: Int = string.confirmButtonTestTag,
+    @StringRes dismissButtonTestTag: Int = string.dismissButtonTestTag,
+    @StringRes titleTestTag: Int = string.titleTestTag,
+    @StringRes textTestTag: Int = string.textTestTag,
     onDismissClick: () -> Unit,
     onOkClick: () -> Unit,
     onGoToAppSettingsClick: () -> Unit
@@ -29,12 +34,16 @@ fun PermissionDialog(
         modifier = modifier,
         onDismissRequest = onDismissClick,
         confirmButton = {
-            TextButton(onClick = if (isPermanentlyDeclined) onGoToAppSettingsClick else onOkClick) {
+            TextButton(
+                modifier = Modifier.testTag(stringResource(id = confirmButtonTestTag)),
+                onClick = if (isPermanentlyDeclined) onGoToAppSettingsClick else onOkClick
+            ) {
                 Text(text = stringResource(id = if (isPermanentlyDeclined) grantPermissionText else okText))
             }
         },
         dismissButton = {
             TextButton(
+                modifier = Modifier.testTag(stringResource(id = dismissButtonTestTag)),
                 onClick = onDismissClick,
                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onErrorContainer)
             ) {
@@ -42,10 +51,16 @@ fun PermissionDialog(
             }
         },
         title = {
-            Text(text = stringResource(id = titleText))
+            Text(
+                modifier = Modifier.testTag(stringResource(id = titleTestTag)),
+                text = stringResource(id = titleText)
+            )
         },
         text = {
-            Text(text = stringResource(id = permissionTextProvider.getDescriptionStringResource(isPermanentlyDeclined)))
+            Text(
+                modifier = Modifier.testTag(stringResource(id = textTestTag)),
+                text = stringResource(id = permissionTextProvider.getDescriptionStringResource(isPermanentlyDeclined))
+            )
         }
     )
 }

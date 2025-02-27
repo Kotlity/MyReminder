@@ -106,6 +106,10 @@
     <string name="dismiss">No, thanks</string>
     <string name="grantPermission">Grant permission</string>
     <string name="goToAppSettings">Go to app settings</string>
+    <string name="confirmButtonTestTag">Confirm button test tag</string>
+    <string name="dismissButtonTestTag">Dismiss button test tag</string>
+    <string name="titleTestTag">Title test tag</string>
+    <string name="textTestTag">Text test tag</string>
 
     <string name="permissionTitle">Permission required</string>
 

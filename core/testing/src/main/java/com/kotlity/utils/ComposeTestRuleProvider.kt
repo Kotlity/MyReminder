@@ -13,7 +13,7 @@ abstract class ComposeTestRuleProvider: ResourceOperator, TestNodeFinder {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     override fun getString(id: Int) = context.getString(id)
 
