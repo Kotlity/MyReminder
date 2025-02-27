@@ -17,10 +17,10 @@ open class AndroidComposeTestRuleProvider<T: ComponentActivity>(
     activityClass: Class<T>
 ): ResourceOperator, TestNodeFinder, ScreenOrientationManager {
 
-    @get:Rule(order = 0)
+    @get:Rule
     val androidComposeTestRule = createAndroidComposeRule(activityClass = activityClass)
 
-    @get:Rule(order = 1)
+    @get:Rule
     val screenOrientationRule = ScreenOrientationRule(ScreenOrientation.PORTRAIT)
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext

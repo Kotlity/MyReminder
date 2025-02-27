@@ -1,8 +1,10 @@
 package com.kotlity.feature_reminder_editor.utils
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.kotlity.utils.DateUtil
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.Instant
@@ -11,9 +13,11 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 
-internal object DateUtil {
+internal class DateUtil<A: ComponentActivity>(
+    private val androidComposeTestRule: AndroidComposeTestRule<ActivityScenarioRule<A>, A>
+) {
 
-    private const val NAVIGATE_TO_YEAR_TEXT = "Navigate to year"
+    private val NAVIGATE_TO_YEAR_TEXT = "Navigate to year"
     val zoneIdUTC = ZoneId.of("Z")
 
     val currentDateUTC: LocalDate = LocalDate.now(zoneIdUTC)
@@ -24,14 +28,19 @@ internal object DateUtil {
     val shortenedMonthDayAndYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
     val typedDateInDateInputTextFieldDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-    fun getClosestAllowedToSelectDayTextInDatePicker(
+    fun getClosestAllowedToSelectDayNode(
         dateTimeFormatter: DateTimeFormatter = selectedDateInDatePickerDateFormatter,
         localDate: LocalDate = currentDateUTC,
-        isWeekendDaysAllowed: Boolean = true
-    ): String {
-        if (isWeekendDaysAllowed) return localDate.format(dateTimeFormatter)
+        isWeekendDaysAllowed: Boolean = true,
+        substring: Boolean = true
+    ): SemanticsNodeInteraction {
+        if (isWeekendDaysAllowed) {
+            val dayText = localDate.format(dateTimeFormatter)
+            return androidComposeTestRule.onNodeWithText(dayText, substring)
+        }
         val closestWeekdayInMillis = DateUtil.findClosestWeekdayInMillis(localDate = localDate)
-        return Instant.ofEpochMilli(closestWeekdayInMillis).atOffset(ZoneOffset.UTC).format(dateTimeFormatter)
+        val dayText = Instant.ofEpochMilli(closestWeekdayInMillis).atOffset(ZoneOffset.UTC).format(dateTimeFormatter)
+        return androidComposeTestRule.onNodeWithText(dayText, substring)
     }
 
     fun getDateText(
@@ -39,44 +48,36 @@ internal object DateUtil {
         localDate: LocalDate = currentDateUTC
     ): String = localDate.format(dateTimeFormatter)
 
-    fun getCurrentYearNode(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider
-    ): SemanticsNodeInteraction = semanticsNodeInteractionsProvider.onNodeWithText("$NAVIGATE_TO_YEAR_TEXT $currentYear")
+    fun getCurrentYearNode(): SemanticsNodeInteraction = androidComposeTestRule.onNodeWithText("$NAVIGATE_TO_YEAR_TEXT $currentYear")
 
     private fun getPreviousYears(
         @androidx.annotation.IntRange(1, 5) step: IntRange = IntRange(start = 1, endInclusive = 5)
     ): List<Int> = step.map { currentYear - it }
 
-    fun getPreviousYearNodes(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider
-    ): List<SemanticsNodeInteraction> {
+    fun getPreviousYearNodes(): List<SemanticsNodeInteraction> {
         return getPreviousYears().map { year ->
-            semanticsNodeInteractionsProvider.onNodeWithText("$NAVIGATE_TO_YEAR_TEXT $year")
+            androidComposeTestRule.onNodeWithText("$NAVIGATE_TO_YEAR_TEXT $year")
         }
     }
 
-    fun getNextYearNode(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider
-    ): SemanticsNodeInteraction {
+    fun getNextYearNode(): SemanticsNodeInteraction {
         val nextYear = currentYear + 1
         val nextYearTextNode = "$NAVIGATE_TO_YEAR_TEXT $nextYear"
-        return semanticsNodeInteractionsProvider.onNodeWithText(nextYearTextNode)
+        return androidComposeTestRule.onNodeWithText(nextYearTextNode)
     }
 
     fun getCurrentDayNode(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider,
         dateTimeFormatter: DateTimeFormatter = selectedDateInDatePickerDateFormatter
     ): SemanticsNodeInteraction {
         val currentDateText = currentDateUTC.format(dateTimeFormatter)
 
-        return semanticsNodeInteractionsProvider.onNodeWithText(
+        return androidComposeTestRule.onNodeWithText(
             currentDateText,
             substring = true
         )
     }
 
     fun getPreviousDayNodes(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider,
         step: LongRange = LongRange(start = 1, endInclusive = 5),
         dateTimeFormatter: DateTimeFormatter = selectedDateInDatePickerDateFormatter
     ): List<SemanticsNodeInteraction> {
@@ -85,7 +86,7 @@ internal object DateUtil {
             .map { dates -> dates.format(dateTimeFormatter) }
 
         return previousDateTexts.map { previousDateText ->
-            semanticsNodeInteractionsProvider.onNodeWithText(previousDateText)
+            androidComposeTestRule.onNodeWithText(previousDateText)
         }
     }
 
@@ -99,14 +100,14 @@ internal object DateUtil {
     }
 
     fun getClosestWeekendNodes(
-        semanticsNodeInteractionsProvider: SemanticsNodeInteractionsProvider,
-        dateTimeFormatter: DateTimeFormatter = selectedDateInDatePickerDateFormatter
+        dateTimeFormatter: DateTimeFormatter = selectedDateInDatePickerDateFormatter,
+        substring: Boolean = true
     ): List<SemanticsNodeInteraction> {
         val saturdayLocalDate = getSaturdayLocalDate()
 
         val saturdayDateText = saturdayLocalDate.format(dateTimeFormatter)
         val sundayDateText = saturdayLocalDate.plusDays(1).format(dateTimeFormatter)
 
-        return listOf(saturdayDateText, sundayDateText).map { semanticsNodeInteractionsProvider.onNodeWithText(it) }
+        return listOf(saturdayDateText, sundayDateText).map { androidComposeTestRule.onNodeWithText(it, substring) }
     }
 }

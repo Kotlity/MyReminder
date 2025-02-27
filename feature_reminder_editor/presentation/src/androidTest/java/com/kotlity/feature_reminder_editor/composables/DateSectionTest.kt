@@ -30,8 +30,8 @@ import com.kotlity.feature_reminder_editor.composables.date.DateSection
 import com.kotlity.feature_reminder_editor.mappers.toDisplayableReminderEditorDate
 import com.kotlity.feature_reminder_editor.models.DisplayableReminderEditorDate
 import com.kotlity.feature_reminder_editor.models.PickerDialog
-import com.kotlity.feature_reminder_editor.utils.FutureSelectableDates
 import com.kotlity.feature_reminder_editor.utils.DateUtil
+import com.kotlity.feature_reminder_editor.utils.FutureSelectableDates
 import com.kotlity.feature_reminder_editor.utils.WeekdaysSelectableDates
 import com.kotlity.utils.AndroidComposeTestRuleProvider
 import org.junit.Before
@@ -41,6 +41,8 @@ import org.threeten.bp.Instant
 class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(ComponentActivity::class.java) {
 
     private lateinit var activityRecreationManager: ActivityRecreationManager<ComponentActivity>
+    
+    private val dateUtil: DateUtil<ComponentActivity> = DateUtil(androidComposeTestRule)
 
     private val dateTitle: SemanticsNodeInteraction by lazy { onNodeWithText(dateTitleText) }
     private val dateIcon: SemanticsNodeInteraction by lazy { onNodeWithContentDescription(getString(string.dateIconDescription)) }
@@ -240,18 +242,17 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         datePickerSelectedDate.assertTextEquals(datePickerSelectedDateDefaultText)
 
-        datePickerYearSwitcherButton.assertTextEquals(DateUtil.getDateText())
+        datePickerYearSwitcherButton.assertTextEquals(dateUtil.getDateText())
 
-        val currentDateUTC = DateUtil.currentDateUTC.plusDays(1)
+        val currentDateUTC = dateUtil.currentDateUTC.plusDays(1)
 
-        val result = DateUtil.getClosestAllowedToSelectDayTextInDatePicker(localDate = currentDateUTC)
-
-        onNodeWithText(result)
+        dateUtil
+            .getClosestAllowedToSelectDayNode(localDate = currentDateUTC)
             .performClick()
             .assertIsSelected()
 
-        val selectedDayText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.shortenedMonthDayAndYearFormatter,
+        val selectedDayText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.shortenedMonthDayAndYearFormatter,
             localDate = currentDateUTC
         )
 
@@ -295,9 +296,9 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         datePickerYearSwitcherButton.performClick()
 
-        DateUtil.getCurrentYearNode(androidComposeTestRule).assertIsSelected()
+        dateUtil.getCurrentYearNode().assertIsSelected()
 
-        DateUtil.getPreviousYearNodes(androidComposeTestRule).all { it.assertIsNotEnabled(); true }
+        dateUtil.getPreviousYearNodes().all { it.assertIsNotEnabled(); true }
     }
 
     @Test
@@ -318,9 +319,9 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
             }
         }
 
-        DateUtil.getCurrentDayNode(androidComposeTestRule).assertIsEnabled()
+        dateUtil.getCurrentDayNode().assertIsEnabled()
 
-        DateUtil.getPreviousDayNodes(androidComposeTestRule).all { it.assertIsNotEnabled(); true }
+        dateUtil.getPreviousDayNodes().all { it.assertIsNotEnabled(); true }
     }
 
     @Test
@@ -341,7 +342,7 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
             }
         }
 
-        DateUtil.getClosestWeekendNodes(androidComposeTestRule).all { it.assertIsNotEnabled(); true }
+        dateUtil.getClosestWeekendNodes().all { it.assertIsNotEnabled(); true }
     }
 
     @Test
@@ -403,17 +404,16 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         datePickerYearSwitcherButton.performClick()
 
-        DateUtil.getNextYearNode(androidComposeTestRule).performClick()
+        dateUtil.getNextYearNode().performClick()
 
-        val localDate = DateUtil.currentDateUTC.plusYears(1).plusDays(1)
+        val localDate = dateUtil.currentDateUTC.plusYears(1).plusDays(1)
 
-        val selectedShortestDate = DateUtil.getDateText(localDate = localDate)
+        val selectedShortestDate = dateUtil.getDateText(localDate = localDate)
 
         datePickerYearSwitcherButton.assertTextEquals(selectedShortestDate)
 
-        val closestAllowedSelectedDateText = DateUtil.getClosestAllowedToSelectDayTextInDatePicker(localDate = localDate)
-
-        onNodeWithText(closestAllowedSelectedDateText)
+        dateUtil
+            .getClosestAllowedToSelectDayNode(localDate = localDate)
             .performClick()
             .assertIsSelected()
 
@@ -426,15 +426,15 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         dateInputSwitcherButton.assertDoesNotExist()
 
-        val dateInputEnteredDateText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.shortenedMonthDayAndYearFormatter,
+        val dateInputEnteredDateText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.shortenedMonthDayAndYearFormatter,
             localDate = localDate
         )
 
         dateInputEnteredDate.assertTextEquals(dateInputEnteredDateText)
 
-        val dateInputTextFieldText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.typedDateInDateInputTextFieldDateFormatter,
+        val dateInputTextFieldText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.typedDateInDateInputTextFieldDateFormatter,
             localDate = localDate
         )
         dateInputTextField.assertTextContains(dateInputTextFieldText)
@@ -475,10 +475,10 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
             .assertIsDisplayed()
             .assertTextEquals(dateInputTextFieldLabel, includeEditableText = false)
 
-        val localDate = DateUtil.currentDateUTC.plusDays(5)
+        val localDate = dateUtil.currentDateUTC.plusDays(5)
 
-        val typedDateText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.typedDateInDateInputTextFieldDateFormatter,
+        val typedDateText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.typedDateInDateInputTextFieldDateFormatter,
             localDate = localDate
         )
 
@@ -490,8 +490,8 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         dateInputTextField.assertTextContains(typedDateText)
 
-        val dateInputEnteredDateText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.shortenedMonthDayAndYearFormatter,
+        val dateInputEnteredDateText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.shortenedMonthDayAndYearFormatter,
             localDate = localDate
         )
 
@@ -532,9 +532,9 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         dayTextField.performClick()
 
-        val selectedDayText = DateUtil.getClosestAllowedToSelectDayTextInDatePicker()
-
-        onNodeWithText(selectedDayText, substring = true).performClick()
+        dateUtil
+            .getClosestAllowedToSelectDayNode()
+            .performClick()
 
         okTextButton.performClick()
 
@@ -569,9 +569,9 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
     @Test
     fun typedNewDate_updatesCurrentDateInTheTextFields() {
-        val saturdayLocalDate = DateUtil.getSaturdayLocalDate()
+        val saturdayLocalDate = dateUtil.getSaturdayLocalDate()
         val currentDateInMillis = com.kotlity.utils.DateUtil.findClosestWeekdayInMillis(localDate = saturdayLocalDate)
-        val currentDate = Instant.ofEpochMilli(currentDateInMillis).atZone(DateUtil.zoneIdUTC).toLocalDate()
+        val currentDate = Instant.ofEpochMilli(currentDateInMillis).atZone(dateUtil.zoneIdUTC).toLocalDate()
 
         displayableReminderEditorDate = currentDateInMillis.toDisplayableReminderEditorDate()
 
@@ -610,20 +610,15 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         monthTextField.performClick()
 
-        val selectedDayResponseText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.shortenedMonthDayAndYearFormatter,
+        val selectedDayResponseText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.shortenedMonthDayAndYearFormatter,
             localDate = currentDate
         )
 
-        val yearSwitcherButtonText = DateUtil.getDateText(localDate = currentDate)
+        val yearSwitcherButtonText = dateUtil.getDateText(localDate = currentDate)
 
-        val selectedDayText = DateUtil.getClosestAllowedToSelectDayTextInDatePicker(
-            localDate = currentDate,
-            isWeekendDaysAllowed = false
-        )
-
-        val selectedDayInputResponseText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.typedDateInDateInputTextFieldDateFormatter,
+        val selectedDayInputResponseText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.typedDateInDateInputTextFieldDateFormatter,
             localDate = currentDate
         )
 
@@ -631,7 +626,10 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         datePickerYearSwitcherButton.assertTextEquals(yearSwitcherButtonText)
 
-        onNodeWithText(selectedDayText, substring = true).assertIsSelected()
+        dateUtil.getClosestAllowedToSelectDayNode(
+            localDate = currentDate,
+            isWeekendDaysAllowed = false
+        ).assertIsSelected()
 
         datePickerSwitcherButton
             .assertIsDisplayed()
@@ -645,13 +643,13 @@ class DateSectionTest: AndroidComposeTestRuleProvider<ComponentActivity>(Compone
 
         val updatedLocalDate = currentDate.plusDays(2)
 
-        val updatedDateText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.typedDateInDateInputTextFieldDateFormatter,
+        val updatedDateText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.typedDateInDateInputTextFieldDateFormatter,
             localDate = updatedLocalDate
         )
 
-        val updatedDateInputEnteredDateText = DateUtil.getDateText(
-            dateTimeFormatter = DateUtil.shortenedMonthDayAndYearFormatter,
+        val updatedDateInputEnteredDateText = dateUtil.getDateText(
+            dateTimeFormatter = dateUtil.shortenedMonthDayAndYearFormatter,
             localDate = updatedLocalDate
         )
 
