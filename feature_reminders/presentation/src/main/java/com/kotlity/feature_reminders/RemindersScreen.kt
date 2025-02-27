@@ -111,8 +111,9 @@ internal fun RemindersScreenSection(
         mutableStateOf(IntOffset.Zero)
     }
 
+    val isLoading = remindersState.isLoading
     val areRemindersEmpty = remindersState.reminders.isEmpty()
-    val isArrowDisplayed = !remindersState.isLoading && areRemindersEmpty
+    val isArrowDisplayed = !isLoading && areRemindersEmpty
     val isPopupMenuDisplayed = remindersState.selectedReminderState.id != null
 
     ObserveAsEvents(eventFlow) { event ->
@@ -143,13 +144,14 @@ internal fun RemindersScreenSection(
                 .fillMaxWidth()
                 .padding(top = dimensionResource(id = R.dimen._10dp)),
             isAddTaskLabelVisible = areRemindersEmpty,
+            isAddTaskClickable = !isLoading,
             onAddTaskPositioned = { offset ->
                 arrowOffset = offset
             },
             onAddTaskClick = onAddClick
         )
 
-        if (remindersState.isLoading) {
+        if (isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center

@@ -30,6 +30,7 @@ import com.kotlity.core.resources.R
 fun TopSection(
     modifier: Modifier = Modifier,
     isAddTaskLabelVisible: Boolean,
+    isAddTaskClickable: Boolean,
     onAddTaskPositioned: (IntOffset) -> Unit,
     onAddTaskClick: () -> Unit
 ) {
@@ -47,6 +48,7 @@ fun TopSection(
                     .padding(end = dimensionResource(id = R.dimen._10dp))
                 ,
                 isAddTaskLabelVisible = isAddTaskLabelVisible,
+                isAddTaskClickable = isAddTaskClickable,
                 onIconPositioned = {
                     onAddTaskPositioned(it)
                 },
@@ -72,6 +74,7 @@ private fun TopSectionPreview() {
                 .statusBarsPadding()
                 .systemBarsPadding(),
             isAddTaskLabelVisible = isAddTaskLabelVisible,
+            isAddTaskClickable = true,
             onAddTaskClick = {
                 isAddTaskLabelVisible = !isAddTaskLabelVisible
             },

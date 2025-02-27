@@ -57,6 +57,7 @@ fun AddTaskSection(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     isAddTaskLabelVisible: Boolean,
+    isAddTaskClickable: Boolean,
     @StringRes labelRes: Int = R.string.addTask,
     labelStyle: TextStyle = MaterialTheme.typography.labelSmall,
     shape: Shape = RoundedCornerShape(topEnd = dimensionResource(id = R.dimen._30dp), bottomEnd = dimensionResource(id = R.dimen._30dp)),
@@ -94,7 +95,10 @@ fun AddTaskSection(
                     val yPosition = position.y.toInt() + size.height * 1.2f
                     onIconPositioned(IntOffset(x = xPosition.toInt(), y = yPosition.toInt()))
                 }
-                .clickable(onClick = onAddTaskClick),
+                .clickable(
+                    enabled = isAddTaskClickable,
+                    onClick = onAddTaskClick
+                ),
             painter = painterResource(id = addIconRes),
             contentDescription = addIconDescription
         )
@@ -116,8 +120,12 @@ fun AddTaskSection(
                 Card(
                     modifier = Modifier.offset(x = dimensionResource(id = R.dimen.minus8dp)),
                     onClick = onAddTaskClick,
+                    enabled = isAddTaskClickable,
                     shape = shape,
-                    colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                    colors = CardDefaults.cardColors(
+                        containerColor = backgroundColor,
+                        disabledContainerColor = backgroundColor
+                    ),
                     border = border
                 ) {
                     Text(
@@ -150,6 +158,7 @@ private fun AddTaskSectionPreview() {
         ) {
             AddTaskSection(
                 isAddTaskLabelVisible = isShowAddTaskLabel,
+                isAddTaskClickable = true,
                 onIconPositioned = {},
                 onAddTaskClick = { isShowAddTaskLabel = !isShowAddTaskLabel }
             )
