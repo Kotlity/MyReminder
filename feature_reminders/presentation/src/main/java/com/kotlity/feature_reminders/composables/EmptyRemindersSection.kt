@@ -22,20 +22,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.util.PreviewAnnotation
-import com.kotlity.core.resources.R
 import com.kotlity.core.resources.R.drawable.main_reminder_logo
 import com.kotlity.core.resources.R.string.addYourTaskFirst
 import com.kotlity.core.ResourcesConstant._0_3
 import com.kotlity.core.ResourcesConstant._0_71
+import com.kotlity.core.resources.R.*
 
 @Composable
-fun EmptyRemindersSection(
+internal fun EmptyRemindersSection(
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.Center,
     @DrawableRes logoRes: Int = main_reminder_logo,
     @StringRes labelRes: Int = addYourTaskFirst,
     labelStyle: TextStyle = MaterialTheme.typography.displaySmall,
-    emptyRemindersLogoDescription: String? = stringResource(id = R.string.emptyRemindersLogoDescription)
+    emptyRemindersLogoDescription: String? = stringResource(id = string.emptyRemindersLogoDescription)
 ) {
 
     Box(
@@ -45,7 +45,7 @@ fun EmptyRemindersSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth(_0_71)
-                .offset(y = dimensionResource(id = R.dimen.minus30dp)),
+                .offset(y = dimensionResource(id = dimen.minus30dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -55,7 +55,7 @@ fun EmptyRemindersSection(
                 painter = painterResource(id = logoRes),
                 contentDescription = emptyRemindersLogoDescription
             )
-            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen._5dp)))
+            Spacer(modifier = Modifier.height(dimensionResource(id = dimen._5dp)))
             Text(
                 text = stringResource(id = labelRes),
                 style = labelStyle

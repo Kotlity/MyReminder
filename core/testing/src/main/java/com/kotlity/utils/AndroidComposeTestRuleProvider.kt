@@ -23,7 +23,7 @@ open class AndroidComposeTestRuleProvider<T: ComponentActivity>(
     @get:Rule
     val screenOrientationRule = ScreenOrientationRule(ScreenOrientation.PORTRAIT)
 
-    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     override fun getString(id: Int) = context.getString(id)
 

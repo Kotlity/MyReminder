@@ -1,6 +1,7 @@
 
 package com.kotlity.feature_reminders.composables
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.tween
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextMeasurer
@@ -50,7 +52,8 @@ fun AddTaskArrowSection(
     modifier: Modifier = Modifier,
     arrowWidth: Float = dimensionResource(id = dimen._5dp).toPx(),
     text: String = stringResource(id = string.addYourTask),
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium
+    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    @StringRes addTaskArrowSectionTestTag: Int = string.addTaskArrowSectionTestTag
 ) {
     val arrowAnimation = remember {
         Animatable(0f)
@@ -85,7 +88,7 @@ fun AddTaskArrowSection(
         }
     }
 
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.testTag(stringResource(id = addTaskArrowSectionTestTag))) {
         val canvasWidth = size.width
         val canvasHeight = size.height
 

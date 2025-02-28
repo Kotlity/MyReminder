@@ -35,7 +35,7 @@ class RemindersViewModel(
     private val _state = MutableStateFlow(RemindersState())
     internal val state = _state
         .onStart {
-            onAction(RemindersAction.OnLoadReminders)
+            onLoadReminders()
         }
         .stateIn(
             scope = viewModelScope,
@@ -55,7 +55,6 @@ class RemindersViewModel(
             is RemindersAction.OnReminderDelete -> onReminderDelete(remindersAction.id)
             RemindersAction.OnReminderRestore -> onReminderRestore()
             RemindersAction.OnReminderUnselect -> onReminderUnselect()
-            RemindersAction.OnLoadReminders -> onLoadReminders()
         }
     }
 

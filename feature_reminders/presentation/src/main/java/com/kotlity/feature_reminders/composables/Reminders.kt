@@ -35,7 +35,7 @@ import com.skydoves.cloudy.cloudy
 import kotlin.random.Random
 
 @Composable
-fun Reminders(
+internal fun Reminders(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(dimensionResource(id = dimen._10dp)),

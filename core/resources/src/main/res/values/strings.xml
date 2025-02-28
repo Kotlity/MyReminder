@@ -121,6 +121,14 @@
     <string name="reminderDateTextTestTag">Reminder date text test tag</string>
     <string name="reminderPeriodicityTextTestTag">Reminder periodicity text test tag</string>
 
+    <string name="loadingIndicatorTestTag">Loading indicator test tag</string>
+
+    <string name="circlesSectionTestTag">Circles section test tag</string>
+
+    <string name="reminderPopupMenuTestTag">Reminder popup menu test tag</string>
+
+    <string name="addTaskArrowSectionTestTag">Add task arrow section test tag</string>
+
     <string name="permissionTitle">Permission required</string>
 
     <string name="notificationsPermissionText">This app needs permission to send notifications to remind the user about the alarm.</string>

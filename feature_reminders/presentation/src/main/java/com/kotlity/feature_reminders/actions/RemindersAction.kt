@@ -6,5 +6,4 @@ sealed interface RemindersAction {
     data class OnReminderDelete(val id: Long): RemindersAction
     data object OnReminderRestore: RemindersAction
     data object OnReminderUnselect: RemindersAction
-    data object OnLoadReminders: RemindersAction
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -31,26 +32,27 @@ import com.kotlity.core.ui.theme.darkBlack
 import com.kotlity.core.ui.theme.red
 import com.kotlity.core.ui.theme.white
 import com.kotlity.core.util.PreviewAnnotation
-import com.kotlity.core.resources.R
 import com.kotlity.core.ResourcesConstant._18sp
 import com.kotlity.core.ResourcesConstant._1f
+import com.kotlity.core.resources.R.*
 
 @Composable
 fun ReminderPopupMenu(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = MaterialTheme.shapes.extraSmall,
     colors: CardColors = CardDefaults.cardColors(containerColor = white),
-    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen._10dp)),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = dimen._10dp)),
     border: BorderStroke = BorderStroke(
-        width = dimensionResource(id = R.dimen._2dp),
+        width = dimensionResource(id = dimen._2dp),
         color = darkBlack
     ),
+    @StringRes reminderPopupMenuTestTag: Int = string.reminderPopupMenuTestTag,
     onEditSectionClick: () -> Unit,
     onDeleteSectionClick: () -> Unit
 ) {
 
     Card(
-        modifier = modifier,
+        modifier = modifier.testTag(stringResource(id = reminderPopupMenuTestTag)),
         shape = shape,
         colors = colors,
         elevation = elevation,
@@ -59,13 +61,13 @@ fun ReminderPopupMenu(
         Column {
             ReminderDropdownMenuTextButton(
                 shape = shape,
-                textRes = R.string.edit,
+                textRes = string.edit,
                 onClick = onEditSectionClick
             )
             HorizontalDivider(color = darkBlack)
             ReminderDropdownMenuTextButton(
                 shape = shape,
-                textRes = R.string.delete,
+                textRes = string.delete,
                 color = red,
                 onClick = onDeleteSectionClick
             )

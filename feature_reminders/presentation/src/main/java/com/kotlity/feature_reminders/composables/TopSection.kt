@@ -27,7 +27,7 @@ import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.core.resources.R
 
 @Composable
-fun TopSection(
+internal fun TopSection(
     modifier: Modifier = Modifier,
     isAddTaskLabelVisible: Boolean,
     isAddTaskClickable: Boolean,

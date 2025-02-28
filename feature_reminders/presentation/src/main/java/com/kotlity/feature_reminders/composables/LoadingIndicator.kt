@@ -1,5 +1,6 @@
 package com.kotlity.feature_reminders.composables
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.AnimationVector
 import androidx.compose.animation.core.AnimationVector4D
 import androidx.compose.animation.core.InfiniteTransition
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -44,7 +46,7 @@ private const val NUMBER_OF_LINES = 8
 private const val ANIMATION_DURATION = 3000
 
 @Composable
-fun LoadingIndicator(
+internal fun LoadingIndicator(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = dimen._10dp)),
@@ -53,7 +55,8 @@ fun LoadingIndicator(
     lineWidth: Float = with(LocalDensity.current) { dimensionResource(id = dimen._5dp).toPx() },
     lineHeight: Float = with(LocalDensity.current) { dimensionResource(id = dimen._15dp).toPx() },
     baseLineColor: Color = primary,
-    progressLineColor: Color = tertiaryContainer
+    progressLineColor: Color = tertiaryContainer,
+    @StringRes loadingIndicatorTestTag: Int = string.loadingIndicatorTestTag
 ) {
 
     val infiniteTransition = rememberInfiniteTransition(label = stringResource(id = string.loadingIndicatorLabel))
@@ -88,7 +91,7 @@ fun LoadingIndicator(
     )
 
     Card(
-        modifier = modifier,
+        modifier = modifier.testTag(stringResource(id = loadingIndicatorTestTag)),
         shape = shape,
         elevation = elevation,
         border = border
@@ -146,7 +149,7 @@ private fun <T, V: AnimationVector> InfiniteTransition.animateLoadingIndicatorVa
 
 @PreviewAnnotation
 @Composable
-fun LoadingWheelPreview() {
+private fun LoadingWheelPreview() {
     MyReminderTheme {
         Box(
             modifier = Modifier.fillMaxSize(),

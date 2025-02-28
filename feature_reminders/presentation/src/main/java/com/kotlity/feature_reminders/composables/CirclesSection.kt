@@ -1,5 +1,6 @@
 package com.kotlity.feature_reminders.composables
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -13,7 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.kotlity.core.ui.theme.MyReminderTheme
@@ -24,11 +27,14 @@ import com.kotlity.core.resources.R.*
 import com.kotlity.core.ResourcesConstant._1f
 
 @Composable
-fun CirclesSection(modifier: Modifier = Modifier) {
+internal fun CirclesSection(
+    modifier: Modifier = Modifier,
+    @StringRes circlesSectionTestTag: Int = string.circlesSectionTestTag
+) {
 
     val screenSize = LocalScreenSize.current
 
-    Box(modifier = modifier) {
+    Box(modifier = modifier.testTag(stringResource(id = circlesSectionTestTag))) {
         Circle(
             modifier = Modifier
                 .size(dimensionResource(id = dimen._40dp))

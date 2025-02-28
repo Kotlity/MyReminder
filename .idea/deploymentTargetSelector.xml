@@ -13,19 +13,16 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="ReminderItemPreview">
+      <SelectionState runConfigName="onEditClick_hideReminderPopupMenuAndSavesSelectedReminderId()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="ReminderItemTest">
+      <SelectionState runConfigName="onAddClick_worksCorrectly()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="onReminderItem_allNecessaryInformation_isDisplayedCorrectly()">
+      <SelectionState runConfigName="onDeleteClick_hideReminderPopupMenu_deletesReminderAndShowsSnackbar()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="RemindersTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="onReminders_cantScroll_whenUserActionsEnabledSetToFalse()">
+      <SelectionState runConfigName="onSnackbarUndoClick_restoreRecentlyDeletedReminder()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

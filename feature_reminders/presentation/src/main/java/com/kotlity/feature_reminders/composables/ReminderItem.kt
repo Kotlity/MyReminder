@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -123,7 +124,7 @@ fun ReminderItem(
                     contentDescription = stringResource(id = expandIconContentDescription)
                 )
             }
-            Column {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     modifier = Modifier.testTag(stringResource(id = reminderTimeTextTestTag)),
                     text = reminderUi.reminderTime.time,
