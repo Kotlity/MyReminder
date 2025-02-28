@@ -98,9 +98,7 @@ fun ReminderItem(
                 ),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-
-            ) {
+            Column {
                 Text(
                     text = reminderUi.title,
                     style = titleStyle
