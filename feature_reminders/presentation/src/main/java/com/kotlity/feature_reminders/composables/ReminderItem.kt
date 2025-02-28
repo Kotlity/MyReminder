@@ -24,13 +24,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,6 +44,7 @@ import com.kotlity.core.ui.theme.linearGradientColor2
 import com.kotlity.core.ui.theme.white
 import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.core.resources.R.*
+import com.kotlity.core.util.mapToString
 import com.kotlity.feature_reminders.models.DisplayableReminderTime
 import com.kotlity.feature_reminders.models.ReminderUi
 
@@ -61,20 +63,31 @@ fun ReminderItem(
     dateStyle: TextStyle = MaterialTheme.typography.bodySmall,
     @DrawableRes expandIconRes: Int = drawable.expand,
     @StringRes expandIconContentDescription: Int = string.expandIconDescription,
+    @StringRes reminderTimeTextTestTag: Int = string.reminderTimeTextTestTag,
+    @StringRes reminderDateTextTestTag: Int = string.reminderDateTextTestTag,
+    @StringRes reminderPeriodicityTextTestTag: Int = string.reminderPeriodicityTextTestTag,
     onReminderExpandIconClick: (Offset) -> Unit
 ) {
+
+    val context = LocalContext.current
 
     var position by remember {
         mutableStateOf(Offset.Zero)
     }
 
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = dimensionResource(id = dimen._10dp),
+                shape = MaterialTheme.shapes.medium,
+                spotColor = linearGradientColor1
+            ),
         shape = shape,
         colors = colors,
         border = border
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
@@ -82,40 +95,49 @@ fun ReminderItem(
                     top = dimensionResource(id = dimen._20dp),
                     end = dimensionResource(id = dimen._20dp),
                     bottom = dimensionResource(id = dimen._5dp)
-                )
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+
             ) {
                 Text(
                     text = reminderUi.title,
                     style = titleStyle
                 )
+                Spacer(modifier = Modifier.height(dimensionResource(id = dimen._3dp)))
                 Text(
+                    modifier = Modifier.testTag(stringResource(id = reminderDateTextTestTag)),
+                    text = reminderUi.reminderTime.date,
+                    style = dateStyle
+                )
+                Spacer(modifier = Modifier.height(dimensionResource(id = dimen._10dp)))
+                Image(
+                    modifier = Modifier
+                        .onGloballyPositioned {
+                            position = it.positionInRoot()
+                        }
+                        .size(dimensionResource(id = dimen._36dp))
+                        .clickable {
+                            onReminderExpandIconClick(position)
+                        },
+                    painter = painterResource(id = expandIconRes),
+                    contentDescription = stringResource(id = expandIconContentDescription)
+                )
+            }
+            Column {
+                Text(
+                    modifier = Modifier.testTag(stringResource(id = reminderTimeTextTestTag)),
                     text = reminderUi.reminderTime.time,
                     style = timeStyle
                 )
+                Spacer(modifier = Modifier.height(dimensionResource(id = dimen._3dp)))
+                Text(
+                    modifier = Modifier.testTag(stringResource(id = reminderPeriodicityTextTestTag)),
+                    text = reminderUi.periodicity.mapToString(context),
+                    style = dateStyle
+                )
             }
-            Spacer(modifier = Modifier.height(dimensionResource(id = dimen._3dp)))
-            Text(
-                text = reminderUi.reminderTime.date,
-                style = dateStyle
-            )
-            Spacer(modifier = Modifier.height(dimensionResource(id = dimen._10dp)))
-            Image(
-                modifier = Modifier
-                    .onGloballyPositioned {
-                        position = it.positionInRoot()
-                    }
-                    .size(dimensionResource(id = dimen._36dp))
-                    .clickable {
-                        onReminderExpandIconClick(position)
-                    },
-                painter = painterResource(id = expandIconRes),
-                contentDescription = stringResource(id = expandIconContentDescription)
-            )
         }
     }
 }

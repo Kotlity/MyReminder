@@ -3,6 +3,7 @@ package com.kotlity.feature_reminders.mappers
 import com.kotlity.feature_reminders.models.DisplayableReminderTime
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
+import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
 fun Long.toDisplayableReminderTime(
@@ -11,7 +12,7 @@ fun Long.toDisplayableReminderTime(
     is24HourFormat: Boolean = true,
     dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 ): DisplayableReminderTime {
-    val zonedDateTime = org.threeten.bp.ZonedDateTime.ofInstant(instant, zoneId)
+    val zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
     val timeFormatter = if (is24HourFormat) DateTimeFormatter.ofPattern("HH:mm") else DateTimeFormatter.ofPattern("hh:mm a")
     val hoursAndMinutesString = zonedDateTime.format(timeFormatter)
     val dayAndMonthAndYearString = zonedDateTime.format(dateFormatter)

@@ -44,7 +44,7 @@ import com.kotlity.core.resources.R.*
 import com.kotlity.core.ui.theme.MyReminderTheme
 import com.kotlity.core.ui.theme.halfGreyContainer
 import com.kotlity.core.util.PreviewAnnotation
-import com.kotlity.feature_reminder_editor.mappers.mapToString
+import com.kotlity.core.util.mapToString
 
 @Composable
 fun PeriodicityPickerWidget(

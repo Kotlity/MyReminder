@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -20,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -29,7 +26,6 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.kotlity.core.Periodicity
 import com.kotlity.core.ui.theme.MyReminderTheme
-import com.kotlity.core.ui.theme.linearGradientColor1
 import com.kotlity.core.util.PreviewAnnotation
 import com.kotlity.core.resources.R.*
 import com.kotlity.core.ResourcesConstant._1_5
@@ -68,14 +64,7 @@ fun Reminders(
             key = { item -> item.id }
         ) { reminder ->
             ReminderItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = dimensionResource(id = dimen._10dp),
-                        shape = MaterialTheme.shapes.medium,
-                        spotColor = linearGradientColor1
-                    )
-                    .animateItem(),
+                modifier = Modifier.animateItem(),
                 reminderUi = reminder,
                 onReminderExpandIconClick = { position ->
                     if (!userActionsEnabled) return@ReminderItem
