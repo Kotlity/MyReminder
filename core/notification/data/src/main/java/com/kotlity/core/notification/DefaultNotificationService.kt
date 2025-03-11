@@ -8,7 +8,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.kotlity.core.resources.R
 
-private const val NOTIFICATION_ACTION = "com.kotlity.myreminder.action.ACTION_OPEN_FROM_NOTIFICATION"
+const val NOTIFICATION_ACTION = "com.kotlity.myreminder.action.ACTION_OPEN_FROM_NOTIFICATION"
 
 class DefaultNotificationService(
     private val notificationManager: NotificationManager,

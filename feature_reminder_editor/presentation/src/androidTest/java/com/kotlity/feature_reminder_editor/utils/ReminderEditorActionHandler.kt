@@ -16,9 +16,9 @@ internal inline fun reminderEditorActionHandler(
     onUpsertReminder: () -> Unit = {},
 ) {
     when(reminderEditorAction) {
-        is ReminderEditorAction.OnTimeUpdate -> onTimeUpdate(reminderEditorAction.response) //
-        is ReminderEditorAction.OnDateUpdate -> onDateUpdate(reminderEditorAction.date) //
-        is ReminderEditorAction.OnPickerDialogUpdate -> onPickerDialogUpdate(reminderEditorAction.pickerDialog) //
+        is ReminderEditorAction.OnTimeUpdate -> onTimeUpdate(reminderEditorAction.response)
+        is ReminderEditorAction.OnDateUpdate -> onDateUpdate(reminderEditorAction.date)
+        is ReminderEditorAction.OnPickerDialogUpdate -> onPickerDialogUpdate(reminderEditorAction.pickerDialog)
         is ReminderEditorAction.OnCanShowTimePicker -> onCanShowTimePicker(reminderEditorAction.canShowTimePicker)
         is ReminderEditorAction.OnPeriodicityUpdate -> onPeriodicityUpdate(reminderEditorAction.periodicity)
         is ReminderEditorAction.OnPeriodicityDropdownMenuVisibilityUpdate -> onPeriodicityDropdownMenuVisibilityUpdate(reminderEditorAction.isExpanded)

@@ -60,6 +60,8 @@ internal class ReminderEditorViewModel(
 
     private val id: Long? by lazy { savedStateHandle.toRoute<ReminderEditorDestination>().id }
 
+    private var isReminderAlreadyLoaded = false
+
     private var requiredPermissions = permissionsManager.requiredPermissions
 
     internal val reminderEditorState: StateFlow<ReminderEditorState> = savedStateHandle.getStateFlow(
@@ -122,10 +124,7 @@ internal class ReminderEditorViewModel(
 
     private fun onInitiallyLoadReminderIfNeeded() {
         viewModelScope.launch {
-            if (id == null) return@launch
-
-            val isAlreadyUpdatedStateAndProcessDeathOccurred = savedStateHandle.getCurrentState() != ReminderEditorState()
-            if (isAlreadyUpdatedStateAndProcessDeathOccurred) return@launch
+            if (id == null || isReminderAlreadyLoaded) return@launch
 
             reminderEditorRepository.getReminderById(id = id!!)
                 .onSuccess { reminder ->
@@ -139,6 +138,8 @@ internal class ReminderEditorViewModel(
                 .onError { error ->
                     sendErrorToChannel(error = ReminderError.Database(error = error))
                 }
+
+            isReminderAlreadyLoaded = true
         }
     }
 

@@ -5,10 +5,11 @@ import com.kotlity.core.util.AlarmError
 import com.kotlity.core.util.Result
 import com.kotlity.utils.TestErrorHandler
 import com.kotlity.utils.TestReminderRepositoryWrapper
-import kotlinx.coroutines.flow.Flow
 
-class TestScheduler(initialState: Result<List<Reminder>, AlarmError> = Result.Success(data = emptyList())):
-    TestReminderRepositoryWrapper<List<Reminder>, AlarmError>(initialState = initialState),
+class TestScheduler(
+    initialState: Result<List<Reminder>, AlarmError> = Result.Success(data = emptyList()),
+    override val canScheduleAlarms: Boolean = true
+): TestReminderRepositoryWrapper<List<Reminder>, AlarmError>(initialState = initialState),
     TestErrorHandler<AlarmError>,
     Scheduler {
 

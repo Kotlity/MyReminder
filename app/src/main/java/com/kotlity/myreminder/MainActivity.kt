@@ -6,23 +6,42 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import com.kotlity.core.Is24HourFormatReceiver
+import com.kotlity.core.ui.theme.MyReminderTheme
 
 class MainActivity : ComponentActivity() {
 
     private var is24HourFormatReceiver: Is24HourFormatReceiver? = null
+
+    private val onNewIntentViewModel by viewModels<OnNewIntentViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registerIs24HourFormatReceiver()
         enableEdgeToEdge()
         setContent {
-
+            MyReminderTheme {
+                MyReminderApp(
+                    shouldNavigateToRemindersScreen = onNewIntentViewModel.shouldNavigateToRemindersScreenFlow
+                )
+            }
         }
+
+        navigateToRemindersScreenIfNeeded(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        navigateToRemindersScreenIfNeeded(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         unregisterIs24HourFormatReceiver()
+    }
+
+    private fun navigateToRemindersScreenIfNeeded(intent: Intent) {
+        onNewIntentViewModel.navigateToRemindersScreenIfNeeded(action = intent.action)
     }
 
     private fun registerIs24HourFormatReceiver() {

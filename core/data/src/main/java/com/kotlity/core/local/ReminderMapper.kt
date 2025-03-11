@@ -13,7 +13,7 @@ fun ReminderEntity.toReminder(): Reminder {
 
 fun Reminder.toReminderEntity(): ReminderEntity {
     return ReminderEntity(
-        id = id,
+        id = if (id == 0L) null else id,
         title = title,
         reminderTime = reminderTime,
         periodicity = periodicity

@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import com.kotlity.core.alarm.receivers.AlarmReceiver
 import com.kotlity.core.alarm.util.reminderCall
@@ -17,12 +18,13 @@ class AlarmScheduler(
     private val alarmManager: AlarmManager,
     private val context: Context
 ): Scheduler {
-    private val canScheduleExactAlarms: Boolean
+    override val canScheduleAlarms: Boolean
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms() else true
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun addOrUpdateReminder(reminder: Reminder): Result<Unit, AlarmError> {
         return reminderCall {
-            if (!canScheduleExactAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
+            if (!canScheduleAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
             val intent = Intent(context, AlarmReceiver::class.java).apply {
                 val bundle = bundleOf(
                     context.getString(R.string.reminderIdExtraKey) to reminder.id,
@@ -40,7 +42,7 @@ class AlarmScheduler(
 
     override fun cancelReminder(id: Long): Result<Unit, AlarmError> {
         return reminderCall {
-            if (!canScheduleExactAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
+            if (!canScheduleAlarms) return@reminderCall Result.Error(error = AlarmError.SECURITY)
             val pendingIntent = Intent(context, AlarmReceiver::class.java).let {
                 PendingIntent.getBroadcast(context, id.hashCode(), it, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)
             }

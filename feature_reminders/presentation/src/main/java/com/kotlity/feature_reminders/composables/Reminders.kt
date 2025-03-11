@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
@@ -46,11 +45,6 @@ internal fun Reminders(
     onReminderClick: (Offset, Long) -> Unit
 ) {
 
-    val density = LocalDensity.current
-
-    val updatedOffsetX = with(density) { dimensionResource(id = dimen.minus15dp).toPx() }
-    val updatedOffsetY = with(density) { dimensionResource(id = dimen._15dp).toPx() }
-
     LazyColumn(
         modifier = modifier,
         state = state,
@@ -68,7 +62,7 @@ internal fun Reminders(
                 reminderUi = reminder,
                 onReminderExpandIconClick = { position ->
                     if (!userActionsEnabled) return@ReminderItem
-                    val updatedPosition = Offset(x = position.x + updatedOffsetX, y = position.y + updatedOffsetY)
+                    val updatedPosition = Offset(x = position.x, y = position.y)
                     onReminderClick(updatedPosition, reminder.id)
                 }
             )

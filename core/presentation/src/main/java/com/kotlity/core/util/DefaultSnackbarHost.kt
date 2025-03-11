@@ -1,5 +1,6 @@
 package com.kotlity.core.util
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarHost
@@ -11,7 +12,10 @@ import androidx.compose.ui.Modifier
 fun DefaultSnackbarHost(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState,
-    snackbar: @Composable (SnackbarData) -> Unit = { Snackbar(snackbarData = it) }
+    snackbar: @Composable (SnackbarData) -> Unit = { Snackbar(
+        snackbarData = it,
+        containerColor = MaterialTheme.colorScheme.secondary
+    ) }
 ) {
 
     SnackbarHost(

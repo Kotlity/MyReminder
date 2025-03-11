@@ -8,14 +8,18 @@ import com.kotlity.core.alarm.Scheduler
 import com.kotlity.core.local.ReminderDao
 import com.kotlity.core.Periodicity
 import com.kotlity.core.Reminder
+import com.kotlity.core.local.toReminderEntity
 import com.kotlity.core.notification.NotificationService
+import com.kotlity.core.util.DispatcherHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.Calendar
+import org.threeten.bp.DayOfWeek
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneId
 import kotlin.coroutines.CoroutineContext
 
 class AlarmReceiver: BroadcastReceiver(), KoinComponent {
@@ -28,17 +32,17 @@ class AlarmReceiver: BroadcastReceiver(), KoinComponent {
         val scheduler by inject<Scheduler>()
         val reminderDao by inject<ReminderDao>()
         val notificationService by inject<NotificationService>()
+        val dispatcherHandler by inject<DispatcherHandler>()
 
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = reminder.reminderTime
-        }
 
-        if (shouldSendNotification(calendar, reminder)) notificationService.sendNotification(reminder.id.hashCode(), reminder.title)
+        val localDateTime = Instant.ofEpochMilli(reminder.reminderTime).atZone(ZoneId.systemDefault()).toLocalDateTime()
+
+        if (shouldSendNotification(localDateTime, reminder)) notificationService.sendNotification(reminder.id.hashCode(), reminder.title)
 
         synchronizeUserReminder(
             appScope = GlobalScope,
-            coroutineContext = Dispatchers.IO,
-            calendar = calendar,
+            coroutineContext = dispatcherHandler.io,
+            localDateTime = localDateTime,
             reminder = reminder,
             reminderDao = reminderDao,
             scheduler = scheduler
@@ -65,14 +69,18 @@ class AlarmReceiver: BroadcastReceiver(), KoinComponent {
     private fun BroadcastReceiver.synchronizeUserReminder(
         appScope: CoroutineScope,
         coroutineContext: CoroutineContext,
-        calendar: Calendar,
+        localDateTime: LocalDateTime,
         reminder: Reminder,
         reminderDao: ReminderDao,
         scheduler: Scheduler
     ) {
         doAsync(appScope, coroutineContext) {
-            val periodicityTimestamp = periodicityTimestamp(calendar, reminder.periodicity)
-            if (periodicityTimestamp != null) scheduler.addOrUpdateReminder(reminder.copy(reminderTime = periodicityTimestamp))
+            val periodicityTimestamp = periodicityTimestamp(localDateTime, reminder.periodicity)
+            if (periodicityTimestamp != null) {
+                val updatedReminder = reminder.copy(reminderTime = periodicityTimestamp)
+                reminderDao.updateReminder(entity = updatedReminder.toReminderEntity())
+                scheduler.addOrUpdateReminder(updatedReminder)
+            }
             else {
                 reminderDao.deleteReminder(reminder.id)
                 scheduler.cancelReminder(reminder.id)
@@ -80,29 +88,30 @@ class AlarmReceiver: BroadcastReceiver(), KoinComponent {
         }
     }
 
-    private fun shouldSendNotification(calendar: Calendar, reminder: Reminder): Boolean {
+    private fun shouldSendNotification(localDateTime: LocalDateTime, reminder: Reminder): Boolean {
         return when(reminder.periodicity) {
             Periodicity.ONCE, Periodicity.DAILY  -> true
             Periodicity.WEEKDAYS -> {
-                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-                dayOfWeek in Calendar.MONDAY..Calendar.FRIDAY
+                val dayOfWeek = localDateTime.dayOfWeek
+                dayOfWeek in DayOfWeek.MONDAY..DayOfWeek.FRIDAY
             }
         }
     }
 
-    private fun periodicityTimestamp(calendar: Calendar, periodicity: Periodicity): Long? {
+    private fun periodicityTimestamp(localDateTime: LocalDateTime, periodicity: Periodicity): Long? {
+        var updatedLocalDateTime = localDateTime
         when(periodicity) {
             Periodicity.ONCE -> return null
-            Periodicity.DAILY -> calendar.add(Calendar.DAY_OF_YEAR, 1)
+            Periodicity.DAILY -> updatedLocalDateTime = localDateTime.plusDays(1)
             Periodicity.WEEKDAYS -> {
-                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-                when(dayOfWeek) {
-                    Calendar.FRIDAY -> calendar.add(Calendar.DAY_OF_YEAR, 3)
-                    Calendar.SATURDAY -> calendar.add(Calendar.DAY_OF_YEAR, 2)
-                    else -> calendar.add(Calendar.DAY_OF_YEAR, 1)
+                val dayOfWeek = localDateTime.dayOfWeek
+                updatedLocalDateTime = when(dayOfWeek) {
+                    DayOfWeek.FRIDAY -> localDateTime.plusDays(3)
+                    DayOfWeek.SATURDAY -> localDateTime.plusDays(2)
+                    else -> localDateTime.plusDays(1)
                 }
             }
         }
-        return calendar.timeInMillis
+        return updatedLocalDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     }
 }

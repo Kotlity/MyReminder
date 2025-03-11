@@ -57,17 +57,23 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:resources"))
-    implementation(project(":core:data"))
-    implementation(project(":core:domain"))
     implementation(project(":core:presentation"))
-    implementation(project(":core:alarm:data"))
+    implementation(project(":core:resources"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:data"))
+    implementation(project(":core:testing"))
     implementation(project(":core:alarm:domain"))
-    implementation(project(":core:notification:data"))
+    implementation(project(":core:alarm:data"))
     implementation(project(":core:notification:domain"))
+    implementation(project(":core:notification:data"))
+    implementation(project(":core:permissions:domain"))
+    implementation(project(":core:permissions:data"))
     implementation(project(":feature_reminders:domain"))
     implementation(project(":feature_reminders:data"))
     implementation(project(":feature_reminders:presentation"))
+    implementation(project(":feature_reminder_editor:domain"))
+    implementation(project(":feature_reminder_editor:data"))
+    implementation(project(":feature_reminder_editor:presentation"))
 
     implementation(libs.bundles.android.core)
 

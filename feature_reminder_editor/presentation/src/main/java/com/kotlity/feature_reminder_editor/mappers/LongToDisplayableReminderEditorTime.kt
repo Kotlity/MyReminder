@@ -11,7 +11,7 @@ import org.threeten.bp.format.DateTimeFormatter
 
 internal fun Long.toDisplayableReminderEditorTime(
     instant: Instant = Instant.ofEpochMilli(this),
-    zoneId: ZoneId = ZoneId.of("Z"),
+    zoneId: ZoneId = ZoneId.systemDefault(),
     is24HourFormat: Boolean = true,
 ): DisplayableReminderEditorTime {
     val localDateTime = ZonedDateTime.ofInstant(instant, zoneId).toLocalDateTime()
